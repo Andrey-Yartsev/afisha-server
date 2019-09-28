@@ -1,0 +1,17 @@
+{
+  "name": "afisha",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "iconv-lite": "^0.4.24",
+    "node-fetch": "^2.6.0",
+    "node-html-parser": "^1.1.15",
+    "request": "^2.88.0"
+  }
+}
