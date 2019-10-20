@@ -1,4 +1,4 @@
-const afishaNn = require('./afisha-nn');
+const afishaNn = require('./afishaNn');
 const hashCode = require('./hashCode');
 const moment = require('moment');
 
@@ -37,6 +37,10 @@ const getDate = d => {
 
 
 const updateRecord = async (data) => {
+  if (!data.eventDt.result) {
+    console.log("No result in ", data);
+    return;
+  }
   if (data.eventDt.result.error) {
     console.log("Ignore record event date error");
     return;
@@ -84,8 +88,16 @@ const updateRecord = async (data) => {
 
 const run = async () => {
   console.log('Parsing wall...');
-  const posts = await afishaNn.parseGroup({ fromStore: true });
-  posts.forEach(async post => {
+  const posts = await afishaNn.parseGroupLong({
+    // store: true,
+    // fromStore: true
+  });
+  // console.log(posts);
+  // return;
+  posts.forEach(async (post, i) => {
+    if (!post) {
+      throw new Error("No post on index " + i);
+    }
     await updateRecord(post);
   })
 };

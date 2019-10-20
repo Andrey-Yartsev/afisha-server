@@ -5,12 +5,12 @@ const fs = require('fs');
 const moment = require('moment');
 
 const debugTime = text => {
- // console.log(text);
+  // console.log(text);
 };
 
 // https://m.vk.com/afisha_nnov?offset=15&own=1
 
-const fetchText = ({path, method, form}) => {
+const fetchText = ({ path, method, form }) => {
   let config = {
     url: 'https://m.vk.com/' + path,
     encoding: null,
@@ -27,7 +27,7 @@ const fetchText = ({path, method, form}) => {
 };
 
 const fetchMeta = async (name) => {
-  let c = await fetchText({path: name});
+  let c = await fetchText({ path: name });
   // console.log(c);
 
   const root = parser.parse(c);
@@ -35,16 +35,25 @@ const fetchMeta = async (name) => {
   const _name = node.attributes.name;
 
   const [, fixed, owner_id] = _name.match(/post(.+)_(.+)/);
-  return {fixed, owner_id};
+  return { fixed, owner_id };
 };
 
 const parseDayTime = p => {
+  // console.log("***", p);
   let [, day, time] = [...p];
 
   time = parseTime(time);
   day = parseDay(day);
 
-  return {day, time};
+  return { day, time };
+};
+
+const parseDayMonthNTime = p => {
+  return {
+    time: parseTime(p[3]),
+    day: p[1],
+    month: p[2]
+  };
 };
 
 const parseUnusual1 = p => {
@@ -52,13 +61,13 @@ const parseUnusual1 = p => {
     {
       day: p[1],
       month: p[2],
-      time: p[3],
+      time: p[3]
     },
     {
       day: p[4],
       month: p[5],
-      time: p[6],
-    },
+      time: p[6]
+    }
   ];
 };
 
@@ -68,7 +77,7 @@ const parseDayTimePeriod = p => {
   timeTo = parseTime(timeTo);
   day = parseDay(day);
 
-  return {day, timeFrom, timeTo};
+  return { day, timeFrom, timeTo };
 };
 
 const parseTwoDays = p => {
@@ -126,6 +135,7 @@ const parseDatePeriod = p => {
 };
 
 const matchTime = time => {
+  // console.log(">>>" + time);
   time = time.trim();
 
   let t = time.match(/(\d+)-(\d+)/);
@@ -163,7 +173,7 @@ const months = [
   'сентября',
   'октября',
   'ноября',
-  'декабря',
+  'декабря'
 ];
 
 const getMonthN = month => {
@@ -171,27 +181,59 @@ const getMonthN = month => {
 };
 
 const parseMonth = text => {
-   const mths = months.join("|");
-   const m = text.match(new RegExp(`(${mths})`));
-   if (!m) {
-     return false;
-   }
 
-   let month = m[0];
-   const day = text.replace(month, "").trim();
+  const mths = months.join("|");
+  const m = text.match(new RegExp(`(${mths})`));
+  if (!m) {
+    return false;
+  }
 
-   month = getMonthN(month);
+  let month = m[0];
+  let day = text.replace(month, "").trim();
+  let d = day.match(/(\d+)/);
+  if (!d) {
+    throw new Error("day not found");
+  }
+  day = d[1];
+  month = getMonthN(month);
 
-   return {
-     day,
-     month
-   };
+  return {
+    day,
+    month
+  };
+};
+
+const stripWeekDays = s => {
+  const weekDays = [
+    'понедельник',
+    'вторник',
+    'среда',
+    'четверг',
+    'пятница',
+    'суббота',
+    'воскресенье',
+    'воскресение',
+    'пн',
+    'вт',
+    'ср',
+    'чт',
+    'пт',
+    'сб',
+    'вс',
+    'суб'
+  ];
+  weekDays.forEach(weekDay => {
+    s = s.replace(new RegExp(`\\(${weekDay}\\)`), "");
+  });
+  return s;
 };
 
 const parseDayMonth = text => {
+  text = stripWeekDays(text);
   text = text.trim();
   const mths = months.join("|");
   const re = `^(\\d+)\\s*(${mths})$`;
+  //console.log(text);
   const m = text.match(new RegExp(re));
   if (!m) {
     return false;
@@ -204,7 +246,7 @@ const parseDayMonth = text => {
 
 const parseDay = day => {
   day = day.trim();
-
+  // console.log(">>>", day)
   let month = null;
   const r = parseMonth(day);
 
@@ -232,8 +274,11 @@ const parseDay = day => {
 const parseDate = text => {
   const m = text.match(/Когда:([^<]+)<br/m);
   if (!m) {
+    // console.log(text);
     return {
-      error: "Когда: not found"
+      result: {
+        error: "Когда: not found"
+      }
     };
   }
 
@@ -256,6 +301,27 @@ const parseDateStr = s => {
     p = s.match(/(.*),(.*)/);
 
     if (p) {
+
+      // check if its a dates list
+      let days = s.split(',')
+      const isDaysList = days.every(day => {
+        const r = parseDayMonth(day);
+        return r;
+      });
+
+      if (isDaysList) {
+        result = days.map(day => {
+          return parseDayMonth(day);
+        });
+        result.format = 'day month, day month[, ...]';
+
+        return {
+          init: s.trim(),
+          result
+        };
+      }
+
+
       let hasSecondTime = p[1].match(/(.*),(.*)/)
       if (hasSecondTime) {
         if (matchTime(hasSecondTime[2])) {
@@ -271,8 +337,9 @@ const parseDateStr = s => {
         result = p;
         result.format = 'day month';
       } else {
-        p = s.match(/(.*)в(.*)/);
+        p = s.match(/(.*) в (.*)/);
         if (p) {
+          // console.log(p);
           result = parseDayTime(p);
           result.format = 'day в time';
         } else {
@@ -281,28 +348,42 @@ const parseDateStr = s => {
             result = parseDayTimePeriod(p);
             result.format = 'day с timeFrom до timeTo';
           } else {
-            p = s.match(/(\S+) (\d+:\d+)/);
+            //console.log(s.match(/(\d+ \S+)\D+(\d+:\d+)/));
+            p = s.match(/(\d+ \S+)\D+(\d\d:\d\d)/);
             if (p) {
               result = parseDayTime(p);
               result.format = 'day DD:DD';
             } else {
-              p = s.match(/с(.*)по(.*)/);
+              p = s.match(/(\d+ \S+)\D+(\d\d\.\d\d)/);
               if (p) {
-                result = parseDatePeriod(p);
-                result.format = "с DD.MM.YY по DD.MM.YY";
+                result = parseDayTime(p);
+                result.format = 'day DD.DD';
               } else {
-                p = s.match(/(\d+)-(\d+)\s+(\S+)/);
+
+                p = s.match(/с(.*)по(.*)/);
                 if (p) {
-                  result = parseDayPeriod(p);
-                  result.format = 'day1-day2 month';
+                  result = parseDatePeriod(p);
+                  result.format = "с DD.MM.YY по DD.MM.YY";
                 } else {
-                  p = s.match(/(\d+).+(\d+)\s+(\S+)/);
+                  p = s.match(/(\d+)-(\d+)\s+(\S+)/);
                   if (p) {
-                    result = parseTwoDays(p);
-                    result.format = 'day1 day2 month';
+                    result = parseDayPeriod(p);
+                    result.format = 'day1-day2 month';
                   } else {
-                    result = "error";
-                    debugTime("error");
+                    p = s.match(/(\d+).+(\d+)\s+(\S+)/);
+                    if (p) {
+                      result = parseTwoDays(p);
+                      result.format = 'day1 day2 month';
+                    } else {
+                      p = s.match(/(\d+)\.(\d+)\D+(\d+:\d+)/);
+                      if (p) {
+                        result = parseDayMonthNTime(p);
+                        result.format = 'dayN.monthM DD:DD';
+                      } else {
+                        result = "error";
+                        debugTime("error");
+                      }
+                    }
                   }
                 }
               }
@@ -333,7 +414,7 @@ const parseDateStr = s => {
 const stripText = text => {
   text = text.replace(/style="display:none"/, '');
   text = text.replace(/<a href=".*Показать полностью…<\/a>/u, '');
-  console.log(">>>", text);
+  // console.log(">>>", text);
   return text;
 };
 
@@ -352,38 +433,38 @@ const parsePost = post => {
 
   const images = [];
   const imageEls = post.querySelectorAll('.thumbs_map div');
-   imageEls.forEach(v => {
-     const m = v.outerHTML.match(new RegExp("background-image: url\\((.+?)\\)"));
-     images.push(m[1]);
-   });
+  imageEls.forEach(v => {
+    const m = v.outerHTML.match(new RegExp("background-image: url\\((.+?)\\)"));
+    images.push(m[1]);
+  });
 
   return {
     eventDt,
-    text,
+    text
     // images
   };
 };
 
 const parseWall = (html) => {
   const root = parser.parse(html);
-  const postContainers = root.querySelectorAll(".wall_item");
+  let postContainers = root.querySelectorAll(".wall_item");
+
+  // postContainers = [postContainers[3]];
 
   const posts = [];
 
-  // postContainers.forEach(container => {
-  //   const r = parsePost(container);
-  //   if (!r) {
-  //     return;
-  //   }
-  //   posts.push(r);
-  // });
+  postContainers.forEach(container => {
+    const r = parsePost(container);
+    if (!r) {
+      return;
+    }
+    posts.push(r);
+  });
 
-  const r = parsePost(postContainers[1]);
-
-  console.log(r);
-  console.log("--------------");
-
-  posts.push(r);
+  // const r = parsePost(postContainers);
+  //
+  // console.log(r);
+  // console.log("--------------");
 
   return posts;
 };
@@ -402,16 +483,50 @@ const fetchWall = async (offset) => {
 const path = require('path');
 const appRoot = path.dirname(path.dirname(path.resolve(__dirname)));
 
-const parseGroup = async ({store, fromStore }) => {
-  let wallHtml = await fetchWall(1);
+const outputDates = posts => {
+  posts.forEach(async (post, i) => {
+    if (!post.eventDt) {
+      console.log(i + ")" + "no date");
+    } else if (post.eventDt.result.error) {
+      console.log(i + ")" + post.eventDt.result.error);
+    } else {
+      console.log(i + ")", post.eventDt.result);
+      console.log(post.eventDt.init + "\n");
+    }
+  })
+};
 
-  if (store) {
-    fs.writeFileSync(appRoot + "/cache/wall.html", wallHtml);
+const parseGroup = async ({ store, fromStore }) => {
+  let wallHtml;
+  if (!fromStore) {
+    wallHtml = await fetchWall(61);
+    if (store) {
+      fs.writeFileSync(appRoot + "/cache/wall.html", wallHtml);
+    }
   }
+
   if (fromStore) {
     wallHtml = fs.readFileSync(appRoot + "/cache/wall.html").toString();
   }
-  return await parseWall(wallHtml);
+  let r = await parseWall(wallHtml);
+
+  // outputDates(r);
+
+  return r;
+};
+
+
+const parseGroupLong = async () => {
+  let wallHtml = '';
+  const result = [];
+  for (let i=1; i<=10; i++) {
+    console.log(`Process ${i} page`);
+    wallHtml = await fetchWall(10*i + 1);
+    let r = await parseWall(wallHtml);
+    outputDates(r);
+    result.concat(r)
+  }
+  return result;
 };
 
 module.exports = {
@@ -420,5 +535,6 @@ module.exports = {
   parseWall,
   fetchWall,
   parseGroup,
+  parseGroupLong,
   parseDateStr
 };
