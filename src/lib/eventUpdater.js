@@ -7,7 +7,7 @@ function isNumeric(n) {
 }
 
 const momentFirstMin = moment => {
-  return moment.add(1, "minute"); // .utc();
+  return moment.add(1, "second"); // .utc();
 };
 
 const getDate = d => {
@@ -42,13 +42,19 @@ const updateRecord = async (data) => {
     return;
   }
   if (data.eventDt.result.error) {
-    console.log("Ignore record event date error");
+    console.log("Ignore record - event date error");
+    return;
+  }
+  if (data.eventDt.result === "error") {
+    console.log("Ignore record - error");
     return;
   }
 
   const unic = data.text;
   const hash = hashCode(unic);
 
+  //console.log(data);
+  //return;
   if (data.eventDt.result.length) {
     data.eventDt = data.eventDt.result.map(v => getDate(v));
     // data.eventDt = [data.eventDt[0]];
@@ -72,18 +78,10 @@ const updateRecord = async (data) => {
     },
     { upsert: true }
   );
-  // const r2 = await db.EventDate.updateOne(
-  //   { eventHash: hash },
-  //   {
-  //     $set: {
-  //       eventHash: hash,
-  //       eventDt: data.eventDt
-  //     }
-  //   },
-  //   { upsert: true }
-  // );
-
-  console.log(r);
+  if (r.ok) {
+    console.log("Updating record success. " + (!r.nModified ? "Record exists" : "New record"));
+  }
+  // console.log(r);
 };
 
 const run = async () => {

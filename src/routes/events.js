@@ -10,5 +10,14 @@ module.exports = [
       description: 'Get events',
       tags: ['api']
     }
-  }
+  },
+  {
+    method: 'GET',
+    path: '/api/events/exists/{month}',
+    handler: controller.exists,
+    config: {
+      description: 'Get days events exists information',
+      tags: ['api']
+    }
+  },
 ];

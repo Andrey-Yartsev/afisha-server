@@ -1,7 +1,7 @@
 const moment = require('moment');
 
 module.exports = {
-  fetch: async (request) => {
+  fetch: async request => {
     const eventDt = request.params.date;
     let criteria = {};
     if (eventDt) {
@@ -17,14 +17,37 @@ module.exports = {
           },
         },
       };
-      // criteria = {
-      //   _id: "5da310797fb9a5f3710dc9e1",
-      //   eventDt: {$elemMatch: {$gte: new Date("2019-10-13T20:00:00.000Z")}}
-      // }
-      console.log(criteria);
+      // console.log(criteria);
     }
     const r = await request.db.Event.find(criteria);
-    //console.log(r[0].eventDt);
     return r;
+  },
+  exists: async request => {
+    const month = request.params.month;
+    const dt = moment(month, 'M');
+    const from = dt.clone().subtract(2, "month").startOf('month').toDate();
+    const to = dt.clone().add(1, "month").endOf('month').toDate();
+    const criteria = {
+      eventDt: {
+        $elemMatch: {
+          $gte: from,
+          $lt: to
+        },
+      },
+    };
+    const result = await request.db.Event.find(criteria, { eventDt: true });
+    const days = [];
+
+    result.forEach(r => {
+      r.eventDt.forEach(date => {
+        const mDate = moment(date).utcOffset("+03:00");
+        const day = mDate.format("DD.MM");
+        if (days.indexOf(day) === -1) {
+          days.push(day);
+        }
+      });
+    });
+
+    return days;
   }
 };

@@ -499,7 +499,7 @@ const outputDates = posts => {
 const parseGroup = async ({ store, fromStore }) => {
   let wallHtml;
   if (!fromStore) {
-    wallHtml = await fetchWall(61);
+    wallHtml = await fetchWall(1);
     if (store) {
       fs.writeFileSync(appRoot + "/cache/wall.html", wallHtml);
     }
@@ -518,14 +518,17 @@ const parseGroup = async ({ store, fromStore }) => {
 
 const parseGroupLong = async () => {
   let wallHtml = '';
-  const result = [];
-  for (let i=1; i<=10; i++) {
+  let result = [];
+  const pages = 10;
+  for (let i = 1; i <= pages; i++) {
     console.log(`Process ${i} page`);
-    wallHtml = await fetchWall(10*i + 1);
+    wallHtml = await fetchWall(10 * i + 1);
     let r = await parseWall(wallHtml);
-    outputDates(r);
-    result.concat(r)
+    // outputDates(r);
+    result.concat(r);
+    result = [...result, ...r];
   }
+  console.log(result);
   return result;
 };
 
