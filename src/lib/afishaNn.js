@@ -18,6 +18,11 @@ const fetchText = ({ path, method, form }) => {
     form
   };
 
+  console.log({
+    path,
+    form
+  });
+
   return new Promise((accept) => {
     request(config, (err, response, body) => {
       // const c = iconv.encode(iconv.decode(body, 'cp1251'), 'utf8').toString();
@@ -272,6 +277,7 @@ const parseDay = day => {
 };
 
 const parseDate = text => {
+  text = text.replace(/Когда:\s*<br\s*\/?>/, 'Когда:')
   const m = text.match(/Когда:([^<]+)<br/m);
   if (!m) {
     // console.log(text);
@@ -449,7 +455,7 @@ const parseWall = (html) => {
   const root = parser.parse(html);
   let postContainers = root.querySelectorAll(".wall_item");
 
-  // postContainers = [postContainers[3]];
+  // postContainers = [postContainers[0]];
 
   const posts = [];
 
@@ -516,10 +522,9 @@ const parseGroup = async ({ store, fromStore }) => {
 };
 
 
-const parseGroupLong = async () => {
+const parseGroupLong = async ({pages}) => {
   let wallHtml = '';
   let result = [];
-  const pages = 10;
   for (let i = 1; i <= pages; i++) {
     console.log(`Process ${i} page`);
     wallHtml = await fetchWall(10 * i + 1);

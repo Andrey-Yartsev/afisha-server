@@ -42,7 +42,7 @@ const updateRecord = async (data) => {
     return;
   }
   if (data.eventDt.result.error) {
-    console.log("Ignore record - event date error");
+    console.log("Ignore record - " + data.eventDt.result.error);
     return;
   }
   if (data.eventDt.result === "error") {
@@ -86,9 +86,10 @@ const updateRecord = async (data) => {
 
 const run = async () => {
   console.log('Parsing wall...');
-  const posts = await afishaNn.parseGroupLong({
+  const posts = await afishaNn.parseGroup({
+    // pages: 1
     // store: true,
-    // fromStore: true
+    fromStore: true
   });
   // console.log(posts);
   // return;
