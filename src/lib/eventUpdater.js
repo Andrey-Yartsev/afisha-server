@@ -31,30 +31,28 @@ const getDate = d => {
   if (d.time) {
     s += ' ' + d.time;
   }
-
+  // console.log(s + "\n=========================");
   return momentFirstMin(moment(s)).toDate();
 };
 
 
 const updateRecord = async (data) => {
   if (!data.eventDt.result) {
-    console.log("No result in ", data);
+    console.log(`No result in ${data.page}:${data.i}`, data);
     return;
   }
   if (data.eventDt.result.error) {
-    console.log("Ignore record - " + data.eventDt.result.error);
+    console.log(`Ignore record ${data.page}:${data.i} - ` + data.eventDt.result.error);
     return;
   }
   if (data.eventDt.result === "error") {
-    console.log("Ignore record - error");
+    console.log(`Ignore record ${data.page}:${data.i} - error`);
     return;
   }
 
   const unic = data.text;
   const hash = hashCode(unic);
 
-  //console.log(data);
-  //return;
   if (data.eventDt.result.length) {
     data.eventDt = data.eventDt.result.map(v => getDate(v));
     // data.eventDt = [data.eventDt[0]];
@@ -86,13 +84,13 @@ const updateRecord = async (data) => {
 
 const run = async () => {
   console.log('Parsing wall...');
-  const posts = await afishaNn.parseGroup({
-    // pages: 1
+  const posts = await afishaNn.parseGroupLong({
+    pages: 2,
+    // showDates: true,
+    // useOnlyI: 8
     // store: true,
-    fromStore: true
+    // fromStore: true
   });
-  // console.log(posts);
-  // return;
   posts.forEach(async (post, i) => {
     if (!post) {
       throw new Error("No post on index " + i);

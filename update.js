@@ -11,6 +11,6 @@ const Updater = require("./src/lib/eventUpdater");
 
   const updater = Updater(models);
   await updater.run();
-  process.exit(0);
+  // process.exit(0);
 
 })();

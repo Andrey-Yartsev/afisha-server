@@ -18,10 +18,10 @@ const fetchText = ({ path, method, form }) => {
     form
   };
 
-  console.log({
-    path,
-    form
-  });
+  // console.log({
+  //   path,
+  //   form
+  // });
 
   return new Promise((accept) => {
     request(config, (err, response, body) => {
@@ -47,10 +47,17 @@ const parseDayTime = p => {
   // console.log("***", p);
   let [, day, time] = [...p];
 
+  // console.log(p);
   time = parseTime(time);
   day = parseDay(day);
 
   return { day, time };
+};
+
+const parseDayMonthTime = p => {
+  let [, day, month, time] = [...p];
+
+  return { day, month, time };
 };
 
 const parseDayMonthNTime = p => {
@@ -163,6 +170,7 @@ const parseTime = time => {
   if (t) {
     return t;
   }
+  console.trace(time);
   return "Time Error '" + time + "'";
 };
 
@@ -304,90 +312,101 @@ const parseDateStr = s => {
     result = parseUnusual1(p);
     result.format = 'DD/MM (weekday), HH:mm; DD/MM (weekday) HH:mm';
   } else {
-    p = s.match(/(.*),(.*)/);
-
+    p = s.match(/(\d+).(\d+), (\d+:\d+)/);
+    //  parseDayMonthTime(p);
+    // console.log(">>>>", s, p);
     if (p) {
-
-      // check if its a dates list
-      let days = s.split(',')
-      const isDaysList = days.every(day => {
-        const r = parseDayMonth(day);
-        return r;
-      });
-
-      if (isDaysList) {
-        result = days.map(day => {
-          return parseDayMonth(day);
-        });
-        result.format = 'day month, day month[, ...]';
-
-        return {
-          init: s.trim(),
-          result
-        };
-      }
-
-
-      let hasSecondTime = p[1].match(/(.*),(.*)/)
-      if (hasSecondTime) {
-        if (matchTime(hasSecondTime[2])) {
-          p = hasSecondTime;
-        }
-      }
-
-      result = parseDayTime(p);
-      result.format = 'day, time';
+      result = parseDayMonthTime(p);
+      result.format = 'DD.MM HH:mm';
     } else {
-      p = parseDayMonth(s);
+      p = s.match(/(\d+ \S+) в (\d+) час/);
       if (p) {
-        result = p;
-        result.format = 'day month';
+        p[2] = p[2] + ":00";
+        result = parseDayTime(p);
+        result.format = 'day month в time';
       } else {
-        p = s.match(/(.*) в (.*)/);
+        p = s.match(/(.*),(.*)/);
         if (p) {
-          // console.log(p);
-          result = parseDayTime(p);
-          result.format = 'day в time';
-        } else {
-          p = s.match(/(.*) с(.*)до(.*)/);
-          if (p) {
-            result = parseDayTimePeriod(p);
-            result.format = 'day с timeFrom до timeTo';
-          } else {
-            //console.log(s.match(/(\d+ \S+)\D+(\d+:\d+)/));
-            p = s.match(/(\d+ \S+)\D+(\d\d:\d\d)/);
-            if (p) {
-              result = parseDayTime(p);
-              result.format = 'day DD:DD';
-            } else {
-              p = s.match(/(\d+ \S+)\D+(\d\d\.\d\d)/);
-              if (p) {
-                result = parseDayTime(p);
-                result.format = 'day DD.DD';
-              } else {
+          // check if its a dates list
+          let days = s.split(',')
+          const isDaysList = days.every(day => {
+            const r = parseDayMonth(day);
+            return r;
+          });
 
-                p = s.match(/с(.*)по(.*)/);
+          if (isDaysList) {
+            result = days.map(day => {
+              return parseDayMonth(day);
+            });
+            result.format = 'day month, day month[, ...]';
+
+            return {
+              init: s.trim(),
+              result
+            };
+          }
+
+          let hasSecondTime = p[1].match(/(.*),(.*)/)
+          if (hasSecondTime) {
+            if (matchTime(hasSecondTime[2])) {
+              p = hasSecondTime;
+            }
+          }
+
+          result = parseDayTime(p);
+          result.format = 'day, time';
+        } else {
+          p = parseDayMonth(s);
+          if (p) {
+            result = p;
+            result.format = 'day month';
+          } else {
+            p = s.match(/(.*) в (.*)/);
+            if (p) {
+              // console.log(p);
+              result = parseDayTime(p);
+              result.format = 'day в time';
+            } else {
+              p = s.match(/(.*) с(.*)до(.*)/);
+              if (p) {
+                result = parseDayTimePeriod(p);
+                result.format = 'day с timeFrom до timeTo';
+              } else {
+                //console.log(s.match(/(\d+ \S+)\D+(\d+:\d+)/));
+                p = s.match(/(\d+ \S+)\D+(\d\d:\d\d)/);
                 if (p) {
-                  result = parseDatePeriod(p);
-                  result.format = "с DD.MM.YY по DD.MM.YY";
+                  result = parseDayTime(p);
+                  result.format = 'day DD:DD';
                 } else {
-                  p = s.match(/(\d+)-(\d+)\s+(\S+)/);
+                  p = s.match(/(\d+ \S+)\D+(\d\d\.\d\d)/);
                   if (p) {
-                    result = parseDayPeriod(p);
-                    result.format = 'day1-day2 month';
+                    result = parseDayTime(p);
+                    result.format = 'day DD.DD';
                   } else {
-                    p = s.match(/(\d+).+(\d+)\s+(\S+)/);
+                    p = s.match(/с(.*)по(.*)/);
                     if (p) {
-                      result = parseTwoDays(p);
-                      result.format = 'day1 day2 month';
+                      result = parseDatePeriod(p);
+                      result.format = "с DD.MM.YY по DD.MM.YY";
                     } else {
-                      p = s.match(/(\d+)\.(\d+)\D+(\d+:\d+)/);
+                      p = s.match(/(\d+)-(\d+)\s+(\S+)/);
                       if (p) {
-                        result = parseDayMonthNTime(p);
-                        result.format = 'dayN.monthM DD:DD';
+                        result = parseDayPeriod(p);
+                        result.format = 'day1-day2 month';
                       } else {
-                        result = "error";
-                        debugTime("error");
+                        p = s.match(/(\d+).+(\d+)\s+(\S+)/);
+                        if (p) {
+                          result = parseTwoDays(p);
+                          result.format = 'day1 day2 month';
+                        } else {
+                          p = s.match(/(\d+)\.(\d+)\D+(\d+:\d+)/);
+                          if (p) {
+                            result = parseDayMonthNTime(p);
+                            result.format = 'dayN.monthM DD:DD';
+                          } else {
+                            result = "error";
+                            debugTime("error");
+                          }
+                        }
                       }
                     }
                   }
@@ -409,6 +428,15 @@ const parseDateStr = s => {
       result.month = result.day.month;
     }
     result.day = result.day.day;
+  }
+
+  if (result.time && result.time.match(/Error/)) {
+    result.error = result.time;
+  }
+
+  if (result.month === undefined) {
+    console.log(s);
+    result.error = "Month not recognized (undefined)";
   }
 
   return {
@@ -433,7 +461,9 @@ const parsePost = post => {
   }
 
   let text = post.querySelector('.pi_text').innerHTML;
-  text = stripText(text);
+  text = text.trim();
+
+  // console.log(text.substring(0, 100) + "\n---------\n");
 
   const eventDt = parseDate(text);
 
@@ -444,6 +474,8 @@ const parsePost = post => {
     images.push(m[1]);
   });
 
+  text = stripText(text);
+
   return {
     eventDt,
     text
@@ -451,22 +483,24 @@ const parsePost = post => {
   };
 };
 
-const parseWall = (html) => {
+const parseWall = ({ html, page, useOnlyI }) => {
   const root = parser.parse(html);
   let postContainers = root.querySelectorAll(".wall_item");
 
-  // postContainers = [postContainers[0]];
+  if (useOnlyI && postContainers[useOnlyI]) {
+    postContainers = [postContainers[useOnlyI]];
+  }
 
   const posts = [];
-
-  postContainers.forEach(container => {
+  postContainers.forEach((container, i) => {
     const r = parsePost(container);
     if (!r) {
       return;
     }
+    r.page = page;
+    r.i = i;
     posts.push(r);
   });
-
   // const r = parsePost(postContainers);
   //
   // console.log(r);
@@ -483,6 +517,13 @@ const fetchWall = async (offset) => {
       own: 1,
       offset: offset || 0
     }
+  });
+};
+
+const fetchFirstWall = async () => {
+  return await fetchText({
+    path: 'afisha_nnov',
+    method: 'GET'
   });
 };
 
@@ -522,18 +563,39 @@ const parseGroup = async ({ store, fromStore }) => {
 };
 
 
-const parseGroupLong = async ({pages}) => {
-  let wallHtml = '';
-  let result = [];
-  for (let i = 1; i <= pages; i++) {
-    console.log(`Process ${i} page`);
-    wallHtml = await fetchWall(10 * i + 1);
-    let r = await parseWall(wallHtml);
-    // outputDates(r);
-    result.concat(r);
-    result = [...result, ...r];
+const parseGroupLong = async ({ pages, showDates, useOnlyI }) => {
+  if (!pages) {
+    pages = 1;
   }
-  console.log(result);
+
+  let html;
+  let result = [];
+  let parseResult;
+
+  console.log(`Process 1 page`);
+  html = await fetchFirstWall();
+  parseResult = await parseWall({ html, page: 1, useOnlyI });
+  if (showDates) {
+    outputDates(parseResult);
+  }
+  result = [...result, ...parseResult];
+
+  if (pages > 1) {
+    for (let i = 2; i <= pages; i++) {
+      console.log(`Process ${i} page`);
+      html = await fetchWall(10 * i + 1);
+      parseResult = await parseWall({ html, page: i, useOnlyI });
+      parseResult.page = i;
+      if (showDates) {
+        outputDates(parseResult);
+      }
+      result.concat(parseResult);
+      result = [...result, ...parseResult];
+    }
+  }
+
+  // console.log(result);
+
   return result;
 };
 
