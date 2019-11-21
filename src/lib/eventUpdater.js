@@ -65,6 +65,8 @@ const updateRecord = async (data) => {
     data.eventDt = [data.eventDt];
   }
 
+  await models.Event.remove({});
+
   const r = await models.Event.updateOne(
     { hash: hash },
     {
@@ -77,7 +79,7 @@ const updateRecord = async (data) => {
     { upsert: true }
   );
   if (r.ok) {
-    console.log("Updating record success. " + (!r.nModified ? "Record exists" : "New record"));
+    console.log("Updating record success. " + (!r.upserted ? "Record exists" : "New record"));
   }
   // console.log(r);
 };
@@ -85,13 +87,13 @@ const updateRecord = async (data) => {
 const run = async () => {
   console.log('Parsing wall...');
   const posts = await afishaNn.parseGroupLong({
-    pages: 2,
+    pages: 10,
     // showDates: true,
-    // useOnlyI: 8
+    // useOnlyI: 4
     // store: true,
     // fromStore: true
   });
-  posts.forEach(async (post, i) => {
+  return posts.forEach(async (post, i) => {
     if (!post) {
       throw new Error("No post on index " + i);
     }

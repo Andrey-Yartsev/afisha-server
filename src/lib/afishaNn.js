@@ -447,7 +447,7 @@ const parseDateStr = s => {
 
 const stripText = text => {
   text = text.replace(/style="display:none"/, '');
-  text = text.replace(/<a href=".*Показать полностью…<\/a>/u, '');
+  text = text.replace(/<a href="\/wall-.*Показать полностью…<\/a>/u, '');
   // console.log(">>>", text);
   return text;
 };
@@ -463,7 +463,7 @@ const parsePost = post => {
   let text = post.querySelector('.pi_text').innerHTML;
   text = text.trim();
 
-  // console.log(text.substring(0, 100) + "\n---------\n");
+  // console.log(text + "\n---------\n");
 
   const eventDt = parseDate(text);
 

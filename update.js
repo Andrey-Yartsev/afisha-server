@@ -10,7 +10,11 @@ const Updater = require("./src/lib/eventUpdater");
   const models = await db();
 
   const updater = Updater(models);
-  await updater.run();
-  // process.exit(0);
+
+  updater.run();
+
+  setInterval(() => {
+    updater.run();
+  }, 1000 * 60 * 60);
 
 })();
