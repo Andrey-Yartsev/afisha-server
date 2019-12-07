@@ -8,7 +8,6 @@ module.exports = mongoose.Schema({
   },
   dtUpdate: {
     type: Date,
-    default: Date.now
   },
   author: {
     type: String
@@ -25,4 +24,4 @@ module.exports = mongoose.Schema({
     default: []
   },
   // image
-})
+});

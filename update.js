@@ -1,20 +1,12 @@
 const db = require("./src/db/index");
-const Updater = require("./src/lib/eventUpdater");
+const updater = require("./src/services/updater");
+
+process.on('unhandledRejection', (reason, p) => {
+  console.error(reason)
+  console.error(p)
+});
 
 (async () => {
-  process.on('unhandledRejection', (reason, p) => {
-    console.error(reason)
-    console.error(p)
-  })
-
   const models = await db();
-
-  const updater = Updater(models);
-
-  updater.run();
-
-  setInterval(() => {
-    updater.run();
-  }, 1000 * 60 * 60);
-
+  await updater(models);
 })();

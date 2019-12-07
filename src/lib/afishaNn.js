@@ -291,7 +291,7 @@ const parseDate = text => {
     // console.log(text);
     return {
       result: {
-        error: "Когда: not found"
+        error: "Когда: not found (looks like ads)"
       }
     };
   }
@@ -562,8 +562,18 @@ const parseGroup = async ({ store, fromStore }) => {
   return r;
 };
 
+const processPage = async ({ showDates, useOnlyI, i }) => {
+  console.log(`Process ${i} page`);
+  html = await fetchWall(10 * i + 1);
+  parseResult = await parseWall({ html, page: i, useOnlyI });
+  parseResult.page = i;
+  if (showDates) {
+    outputDates(parseResult);
+  }
+  return parseResult;
+};
 
-const parseGroupLong = async ({ pages, showDates, useOnlyI }) => {
+const parseGroupLong = async ({ pages, showDates, useOnlyPage, useOnlyI }) => {
   if (!pages) {
     pages = 1;
   }
@@ -572,29 +582,32 @@ const parseGroupLong = async ({ pages, showDates, useOnlyI }) => {
   let result = [];
   let parseResult;
 
-  console.log(`Process 1 page`);
-  html = await fetchFirstWall();
-  parseResult = await parseWall({ html, page: 1, useOnlyI });
-  if (showDates) {
-    outputDates(parseResult);
+  if (!useOnlyPage) {
+    console.log(`Process 1 page`);
+    html = await fetchFirstWall();
+    parseResult = await parseWall({html, page: 1, useOnlyI});
+    if (showDates) {
+      outputDates(parseResult);
+    }
+    result = [...result, ...parseResult];
   }
-  result = [...result, ...parseResult];
+
+  if (useOnlyPage) {
+    let parseResult = await processPage({ showDates, i: useOnlyPage });
+    console.log(parseResult);
+    process.exit(0);
+    result.concat(parseResult);
+    result = [...result, ...parseResult];
+    return;
+  }
 
   if (pages > 1) {
     for (let i = 2; i <= pages; i++) {
-      console.log(`Process ${i} page`);
-      html = await fetchWall(10 * i + 1);
-      parseResult = await parseWall({ html, page: i, useOnlyI });
-      parseResult.page = i;
-      if (showDates) {
-        outputDates(parseResult);
-      }
+      let parseResult = processPage({ showDates, useOnlyI, i} );
       result.concat(parseResult);
       result = [...result, ...parseResult];
     }
   }
-
-  // console.log(result);
 
   return result;
 };

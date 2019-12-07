@@ -1,0 +1,13 @@
+<table border="1s">
+    <tr>
+        <th>Update</th>
+        <th>Event</th>
+    </tr>
+    {{#each events}}
+    <tr>
+        <td>{{this._dtUpdate}}</td>
+        <td>{{this.eventDt}}</td>
+        <td>{{{this.text}}}</td>
+    </tr>
+    {{/each}}
+</table>

@@ -65,7 +65,13 @@ const updateRecord = async (data) => {
     data.eventDt = [data.eventDt];
   }
 
-  await models.Event.remove({});
+  // await models.Event.remove({});
+  const exists = await models.Event.findOne({ hash });
+
+  if (exists) {
+    console.log("Record exists");
+    return;
+  }
 
   const r = await models.Event.updateOne(
     { hash: hash },
@@ -73,7 +79,8 @@ const updateRecord = async (data) => {
       $set: {
         hash,
         text: data.text,
-        eventDt: data.eventDt
+        eventDt: data.eventDt,
+        dtUpdate: Date.now()
       }
     },
     { upsert: true }
@@ -87,9 +94,10 @@ const updateRecord = async (data) => {
 const run = async () => {
   console.log('Parsing wall...');
   const posts = await afishaNn.parseGroupLong({
-    pages: 10,
+    // pages: 3,
     // showDates: true,
-    // useOnlyI: 4
+    useOnlyPage: 3
+    // useOnlyI: 3
     // store: true,
     // fromStore: true
   });
