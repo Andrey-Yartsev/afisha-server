@@ -94,9 +94,9 @@ const updateRecord = async (data) => {
 const run = async () => {
   console.log('Parsing wall...');
   const posts = await afishaNn.parseGroupLong({
-    // pages: 3,
+    pages: 3,
     // showDates: true,
-    useOnlyPage: 3
+    // useOnlyPage: 3
     // useOnlyI: 3
     // store: true,
     // fromStore: true

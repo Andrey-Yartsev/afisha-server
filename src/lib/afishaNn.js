@@ -170,8 +170,9 @@ const parseTime = time => {
   if (t) {
     return t;
   }
-  console.trace(time);
-  return "Time Error '" + time + "'";
+  const err = "Time Error '" + time + "'";
+  console.trace(err);
+  return err;
 };
 
 const months = [
@@ -594,21 +595,17 @@ const parseGroupLong = async ({ pages, showDates, useOnlyPage, useOnlyI }) => {
 
   if (useOnlyPage) {
     let parseResult = await processPage({ showDates, i: useOnlyPage });
-    console.log(parseResult);
-    process.exit(0);
     result.concat(parseResult);
     result = [...result, ...parseResult];
-    return;
   }
 
   if (pages > 1) {
     for (let i = 2; i <= pages; i++) {
-      let parseResult = processPage({ showDates, useOnlyI, i} );
+      let parseResult = await processPage({ showDates, useOnlyI, i} );
       result.concat(parseResult);
       result = [...result, ...parseResult];
     }
   }
-
   return result;
 };
 
