@@ -23,5 +23,8 @@ module.exports = mongoose.Schema({
     type: Array,
     default: []
   },
-  // image
+  images: {
+    type: Array,
+    default: []
+  }
 });

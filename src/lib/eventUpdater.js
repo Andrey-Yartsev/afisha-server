@@ -80,7 +80,8 @@ const updateRecord = async (data) => {
         hash,
         text: data.text,
         eventDt: data.eventDt,
-        dtUpdate: Date.now()
+        dtUpdate: Date.now(),
+        images: data.images
       }
     },
     { upsert: true }

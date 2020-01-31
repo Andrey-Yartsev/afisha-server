@@ -479,8 +479,8 @@ const parsePost = post => {
 
   return {
     eventDt,
-    text
-    // images
+    text,
+    images
   };
 };
 
