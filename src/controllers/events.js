@@ -22,6 +22,9 @@ module.exports = {
     const r = await request.db.Event.find(criteria);
     return r;
   },
+  fetchLastUpdated: async request => {
+    return await request.db.Event.find().sort( { dtUpdate: -1 } ).limit(5);
+  },
   exists: async request => {
     const month = request.params.month;
     const dt = moment(month, 'M');

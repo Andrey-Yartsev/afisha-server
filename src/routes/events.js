@@ -13,6 +13,15 @@ module.exports = [
   },
   {
     method: 'GET',
+    path: '/api/events/last-updated',
+    handler: controller.fetchLastUpdated,
+    config: {
+      description: 'Get last events',
+      tags: ['api']
+    }
+  },
+  {
+    method: 'GET',
     path: '/api/events/exists/{month}',
     handler: controller.exists,
     config: {
