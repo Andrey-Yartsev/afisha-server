@@ -36,10 +36,11 @@ const getDate = d => {
 };
 
 class EventsUpdater {
-  constructor(name, models, parser) {
+  constructor(name, models, parser, parseGroupOptions) {
     this.name = name;
     this.models = models;
     this.parser = parser;
+    this.parseGroupOptions = parseGroupOptions || {};
   }
   async updateRecord(data) {
     if (!data.eventDt.result) {
@@ -106,14 +107,14 @@ class EventsUpdater {
   }
   async run() {
     console.log(`Run ${this.name} updater`);
-    let posts = await this.parser.parseGroupLong({
+    let posts = await this.parser.parseGroupLong({...{
       pages: 1,
       // showDates: true,
       // useOnlyPage: 3
       // useOnlyI: 3
       // store: true,
       // fromStore: true
-    });
+    }, ...this.parseGroupOptions});
     this.updatePosts(posts);
   }
 }

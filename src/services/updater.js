@@ -2,7 +2,9 @@ const AfishaNnovUpdater = require("../lib/AfishaNnovUpdater");
 const BorzostUpdater = require("../lib/BorzostUpdater");
 
 module.exports = async (models) => {
-  const afishaNnovUpdater = new AfishaNnovUpdater(models);
+  const afishaNnovUpdater = new AfishaNnovUpdater(models, {
+    pages: 3
+  });
   await afishaNnovUpdater.run();
   setInterval(afishaNnovUpdater.run, 1000 * 60 * 10);
 

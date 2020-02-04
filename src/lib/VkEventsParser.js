@@ -412,6 +412,15 @@ class VkEventsParser {
       }
     }
 
+    if (result === "error") {
+      return {
+        init: s.trim(),
+        result: {
+          error: "Date not parsed"
+        }
+      };
+    }
+
     // flattern result
     if (result.day && result.day.day !== undefined) {
       if (!result.day.day) {
