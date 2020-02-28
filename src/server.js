@@ -1,7 +1,4 @@
-'use strict';
-
 const Hapi = require('@hapi/hapi');
-const Hoek = require('@hapi/hoek');
 
 const db = require('./db');
 
@@ -13,19 +10,19 @@ module.exports = async function () {
     debug: { request: ['error'] },
     port,
     routes: {
-      cors: true
+      cors: true,
     },
-    host
+    host,
   });
 
   await server.register(require('@hapi/vision'));
 
   server.views({
     engines: {
-      html: require('handlebars')
+      html: require('handlebars'),
     },
     relativeTo: __dirname,
-    path: 'templates'
+    path: 'templates',
   });
 
   const models = await db();
@@ -33,11 +30,13 @@ module.exports = async function () {
   server.decorate('request', 'db', models);
   server.decorate('server', 'db', models);
 
+  await require('./lib/auth')(server);
+
   server.route(require('./routes/events'));
   server.route(require('./routes/admin/events'));
 
   await server.start();
   console.log(`Server is listening on ${host}:${port}`);
 
-  require('./services/updater')(models);
+  // require('./services/updater')(models);
 };

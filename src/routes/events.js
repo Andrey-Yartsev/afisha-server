@@ -1,5 +1,5 @@
-const Joi = require('joi')
-const controller = require('../controllers/events')
+const Joi = require('joi');
+const controller = require('../controllers/events');
 
 module.exports = [
   {
@@ -8,8 +8,8 @@ module.exports = [
     handler: controller.fetch,
     config: {
       description: 'Get events',
-      tags: ['api']
-    }
+      tags: ['api'],
+    },
   },
   {
     method: 'GET',
@@ -17,8 +17,8 @@ module.exports = [
     handler: controller.fetchLastUpdated,
     config: {
       description: 'Get last events',
-      tags: ['api']
-    }
+      tags: ['api'],
+    },
   },
   {
     method: 'GET',
@@ -26,7 +26,7 @@ module.exports = [
     handler: controller.exists,
     config: {
       description: 'Get days events exists information',
-      tags: ['api']
-    }
+      tags: ['api'],
+    },
   },
 ];

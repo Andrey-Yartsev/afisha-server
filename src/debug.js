@@ -1,11 +1,11 @@
-const a = require('./lib/afisha-nn');
 const fs = require('fs');
-const u = require('./lib/eventUpdater');
+const a = require('./lib/events/afisha-nn');
+const u = require('./lib/events/eventUpdater');
 
 process.on('unhandledRejection', (reason, p) => {
-  console.error(reason)
-  //console.error(p)
-})
+  console.error(reason);
+  // console.error(p)
+});
 
 // const run = async () => {
 //   const r = await a.fetchText({

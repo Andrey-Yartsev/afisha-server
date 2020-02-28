@@ -1,14 +1,24 @@
-const Joi = require('joi');
 const controller = require('../../controllers/admin/events');
 
 module.exports = [
   {
-    method: 'GET',
-    path: '/admin/events',
-    handler: controller.index,
+    method: 'POST',
+    path: '/api/admin/events',
+    handler: controller.create,
     config: {
-      description: 'Outputs events',
-      tags: ['admin']
+      description: 'Creates event',
+      tags: ['admin'],
+      auth: 'admin'
+    }
+  },
+  {
+    method: 'DELETE',
+    path: '/api/admin/events/{id}',
+    handler: controller.remove,
+    config: {
+      description: 'Delete event',
+      tags: ['admin'],
+      auth: 'admin'
     }
   },
 ];

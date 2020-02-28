@@ -1,30 +1,31 @@
-const mongoose = require('mongoose')
-const objectId = mongoose.Schema.Types.ObjectId
+const mongoose = require('mongoose');
+
+const objectId = mongoose.Schema.Types.ObjectId;
 
 module.exports = mongoose.Schema({
   hash: {
     type: String,
-    required: true
+    required: true,
   },
   dtUpdate: {
     type: Date,
   },
   author: {
-    type: String
+    type: String,
   },
   text: {
-    type: String
+    type: String,
   },
   eventDt: {
     type: Array,
-    default: []
+    default: [],
   },
   eventTime: {
     type: Array,
-    default: []
+    default: [],
   },
   images: {
     type: Array,
-    default: []
-  }
+    default: [],
+  },
 });

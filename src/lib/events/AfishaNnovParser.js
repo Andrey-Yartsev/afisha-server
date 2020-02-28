@@ -1,10 +1,10 @@
-const VkEventsParser = require("./VkEventsParser");
+const VkEventsParser = require('./VkEventsParser');
 
 class AfishaNnovParser extends VkEventsParser {
   constructor() {
     super({
-      vkGroupName: "afisha_nnov",
-      datePrefix: "Когда:"
+      vkGroupName: 'afisha_nnov',
+      datePrefix: 'Когда:',
     });
   }
 }

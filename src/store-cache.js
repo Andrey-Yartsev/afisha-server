@@ -1,10 +1,10 @@
-const a = require('./lib/afisha-nn');
 const fs = require('fs');
+const a = require('./lib/events/afisha-nn');
 
 process.on('unhandledRejection', (reason, p) => {
-  console.error(reason)
+  console.error(reason);
   // console.error(p)
-})
+});
 
 // const run = async () => {
 //   const r = await a.fetchText({

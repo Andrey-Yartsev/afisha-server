@@ -1,9 +1,9 @@
-const AfishaNnovUpdater = require("../lib/AfishaNnovUpdater");
-const BorzostUpdater = require("../lib/BorzostUpdater");
+const AfishaNnovUpdater = require('../lib/events/AfishaNnovUpdater');
+const BorzostUpdater = require('../lib/events/BorzostUpdater');
 
 module.exports = async (models) => {
   const afishaNnovUpdater = new AfishaNnovUpdater(models, {
-    pages: 3
+    pages: 3,
   });
   await afishaNnovUpdater.run();
   setInterval(() => {

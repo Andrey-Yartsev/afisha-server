@@ -1,11 +1,11 @@
-const mongoose = require('mongoose')
+const mongoose = require('mongoose');
 
 module.exports = mongoose.Schema({
   eventHash: {
     type: String,
-    required: true
+    required: true,
   },
   eventDt: {
-    type: Date
-  }
-})
+    type: Date,
+  },
+});

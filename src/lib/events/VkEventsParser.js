@@ -5,9 +5,10 @@ const fs = require('fs');
 const moment = require('moment');
 
 const path = require('path');
+
 const appRoot = path.dirname(path.dirname(path.resolve(__dirname)));
 
-const debugTime = text => {
+const debugTime = (text) => {
   // console.log(text);
 };
 
@@ -25,24 +26,23 @@ const months = [
   'сентября',
   'октября',
   'ноября',
-  'декабря'
+  'декабря',
 ];
 
-const getMonthN = month => {
-  return months.indexOf(month) + 1;
-};
+const getMonthN = (month) => months.indexOf(month) + 1;
 
 class VkEventsParser {
   constructor({ vkGroupName, datePrefix }) {
     this.vkGroupName = vkGroupName;
     this.datePrefix = datePrefix;
   }
-  fetchText ({ path, method, form }) {
-    let config = {
-      url: 'https://m.vk.com/' + path,
+
+  fetchText({ path, method, form }) {
+    const config = {
+      url: `https://m.vk.com/${path}`,
       encoding: null,
-      method: method || "GET",
-      form
+      method: method || 'GET',
+      form,
     };
 
     // console.log({
@@ -54,9 +54,10 @@ class VkEventsParser {
       request(config, (err, response, body) => {
         // const c = iconv.encode(iconv.decode(body, 'cp1251'), 'utf8').toString();
         accept(body.toString());
-      })
+      });
     });
   }
+
   parseDayTime(p) {
     // console.log("***", p);
     let [, day, time] = [...p];
@@ -67,32 +68,36 @@ class VkEventsParser {
 
     return { day, time };
   }
-  parseDayMonthTime (p) {
-    let [, day, month, time] = [...p];
+
+  parseDayMonthTime(p) {
+    const [, day, month, time] = [...p];
 
     return { day, month, time };
   }
+
   parseDayMonthNTime(p) {
     return {
       time: this.parseTime(p[3]),
       day: p[1],
-      month: p[2]
+      month: p[2],
     };
   }
+
   parseUnusual1(p) {
     return [
       {
         day: p[1],
         month: p[2],
-        time: p[3]
+        time: p[3],
       },
       {
         day: p[4],
         month: p[5],
-        time: p[6]
-      }
+        time: p[6],
+      },
     ];
   }
+
   parseDayTimePeriod(p) {
     let [, day, timeFrom, timeTo] = [...p];
     timeFrom = this.parseTime(timeFrom);
@@ -101,6 +106,7 @@ class VkEventsParser {
 
     return { day, timeFrom, timeTo };
   }
+
   parseTwoDays(p) {
     let [, day1, day2, month] = [...p];
     day1 = day1.trim();
@@ -109,9 +115,10 @@ class VkEventsParser {
     return {
       day1,
       day2,
-      month
+      month,
     };
   }
+
   parseDayPeriod(p) {
     let [, dayFrom, dayTo, month] = [...p];
 
@@ -124,9 +131,10 @@ class VkEventsParser {
     return {
       dayFrom,
       dayTo,
-      month
+      month,
     };
   }
+
   rangeToDates(dateFrom, dateTo) {
     const days = [];
     let nextDay = dateFrom.clone();
@@ -139,17 +147,19 @@ class VkEventsParser {
     }
     return [dateFrom, ...days];
   }
+
   parseDatePeriod(p) {
     let [, dateFrom, dateTo] = [...p];
 
     dateFrom = dateFrom.trim();
     dateTo = dateTo.trim();
 
-    dateFrom = moment(dateFrom, "DD.MM.YY");
-    dateTo = moment(dateTo, "DD.MM.YY");
+    dateFrom = moment(dateFrom, 'DD.MM.YY');
+    dateTo = moment(dateTo, 'DD.MM.YY');
 
     return this.rangeToDates(dateFrom, dateTo);
   }
+
   // [, dd.mm.yy, dd.mm.yy]
   parseDatePeriod(p) {
     let [, dateFrom, dateTo] = [...p];
@@ -157,74 +167,79 @@ class VkEventsParser {
     dateFrom = dateFrom.trim();
     dateTo = dateTo.trim();
 
-    dateFrom = moment(dateFrom, "DD.MM.YY");
-    dateTo = moment(dateTo, "DD.MM.YY");
+    dateFrom = moment(dateFrom, 'DD.MM.YY');
+    dateTo = moment(dateTo, 'DD.MM.YY');
 
     return this.rangeToDates(dateFrom, dateTo);
   }
+
   matchTime(time) {
     // console.log(">>>" + time);
     time = time.trim();
 
     let t = time.match(/(\d+)-(\d+)/);
     if (t) {
-      return t[1] + ":" + t[2];
+      return `${t[1]}:${t[2]}`;
     }
     t = time.match(/(\d+):(\d+)/);
     if (t) {
-      return t[1] + ":" + t[2];
+      return `${t[1]}:${t[2]}`;
     }
     t = time.match(/(\d+)\.(\d+)/);
     if (t) {
-      return t[1] + ":" + t[2];
+      return `${t[1]}:${t[2]}`;
     }
     return false;
   }
+
   parseTime(time) {
     const t = this.matchTime(time);
     if (t) {
       return t;
     }
-    const err = "Time Error '" + time + "'";
+    const err = `Time Error '${time}'`;
     console.trace(err);
     return err;
   }
+
   parseDayMonth(text) {
     text = this.stripWeekDays(text);
     text = text.trim();
-    const mths = months.join("|");
+    const mths = months.join('|');
     const re = `^(\\d+)\\s*(${mths})$`;
-    //console.log(text);
+    // console.log(text);
     const m = text.match(new RegExp(re));
     if (!m) {
       return false;
     }
     return {
       day: m[1],
-      month: getMonthN(m[2])
+      month: getMonthN(m[2]),
     };
   }
+
   parseMonth(text) {
-    const mths = months.join("|");
+    const mths = months.join('|');
     const m = text.match(new RegExp(`(${mths})`));
     if (!m) {
       return false;
     }
 
     let month = m[0];
-    let day = text.replace(month, "").trim();
-    let d = day.match(/(\d+)/);
+    let day = text.replace(month, '').trim();
+    const d = day.match(/(\d+)/);
     if (!d) {
-      throw new Error("day not found");
+      throw new Error('day not found');
     }
     day = d[1];
     month = getMonthN(month);
 
     return {
       day,
-      month
+      month,
     };
   }
+
   stripWeekDays(s) {
     const weekDays = [
       'понедельник',
@@ -242,13 +257,14 @@ class VkEventsParser {
       'пт',
       'сб',
       'вс',
-      'суб'
+      'суб',
     ];
-    weekDays.forEach(weekDay => {
-      s = s.replace(new RegExp(`\\(${weekDay}\\)`), "");
+    weekDays.forEach((weekDay) => {
+      s = s.replace(new RegExp(`\\(${weekDay}\\)`), '');
     });
     return s;
   }
+
   parseDay(day) {
     day = day.trim();
     // console.log(">>>", day)
@@ -275,28 +291,30 @@ class VkEventsParser {
 
     return { day, month };
   }
+
   parseDate(text) {
-    text = text.replace(new RegExp(`${this.datePrefix}\s*<br\s*\/?>`), this.datePrefix)
-    let m = text.match(new RegExp(`${this.datePrefix}([^<]+)<br`, "m"));
+    text = text.replace(new RegExp(`${this.datePrefix}\s*<br\s*\/?>`), this.datePrefix);
+    let m = text.match(new RegExp(`${this.datePrefix}([^<]+)<br`, 'm'));
     if (!m) {
-      m = text.match(new RegExp(`${this.datePrefix}([^<]+)`, "m"));
+      m = text.match(new RegExp(`${this.datePrefix}([^<]+)`, 'm'));
     }
     if (!m) {
       // console.log(text);
       return {
         result: {
-          error: `${this.datePrefix} not found (looks like ads)`
-        }
+          error: `${this.datePrefix} not found (looks like ads)`,
+        },
       };
     }
 
     return this.parseDateStr(m[1]);
   }
+
   parseDateStr(s) {
     let p;
     let result = null;
 
-    s = s.replace(/\d{4}/, "");
+    s = s.replace(/\d{4}/, '');
 
     // unusual formats
     //
@@ -314,32 +332,30 @@ class VkEventsParser {
       } else {
         p = s.match(/(\d+ \S+) в (\d+) час/);
         if (p) {
-          p[2] = p[2] + ":00";
+          p[2] += ':00';
           result = this.parseDayTime(p);
           result.format = 'day month в time';
         } else {
           p = s.match(/(.*),(.*)/);
           if (p) {
             // check if its a dates list
-            let days = s.split(',')
-            const isDaysList = days.every(day => {
+            const days = s.split(',');
+            const isDaysList = days.every((day) => {
               const r = this.parseDayMonth(day);
               return r;
             });
 
             if (isDaysList) {
-              result = days.map(day => {
-                return this.parseDayMonth(day);
-              });
+              result = days.map((day) => this.parseDayMonth(day));
               result.format = 'day month, day month[, ...]';
 
               return {
                 init: s.trim(),
-                result
+                result,
               };
             }
 
-            let hasSecondTime = p[1].match(/(.*),(.*)/)
+            const hasSecondTime = p[1].match(/(.*),(.*)/);
             if (hasSecondTime) {
               if (this.matchTime(hasSecondTime[2])) {
                 p = hasSecondTime;
@@ -365,7 +381,7 @@ class VkEventsParser {
                   result = this.parseDayTimePeriod(p);
                   result.format = 'day с timeFrom до timeTo';
                 } else {
-                  //console.log(s.match(/(\d+ \S+)\D+(\d+:\d+)/));
+                  // console.log(s.match(/(\d+ \S+)\D+(\d+:\d+)/));
                   p = s.match(/(\d+ \S+)\D+(\d\d:\d\d)/);
                   if (p) {
                     result = this.parseDayTime(p);
@@ -379,7 +395,7 @@ class VkEventsParser {
                       p = s.match(/с(.*)по(.*)/);
                       if (p) {
                         result = this.parseDatePeriod(p);
-                        result.format = "с DD.MM.YY по DD.MM.YY";
+                        result.format = 'с DD.MM.YY по DD.MM.YY';
                       } else {
                         p = s.match(/(\d+)-(\d+)\s+(\S+)/);
                         if (p) {
@@ -396,8 +412,8 @@ class VkEventsParser {
                               result = this.parseDayMonthNTime(p);
                               result.format = 'dayN.monthM DD:DD';
                             } else {
-                              result = "error";
-                              debugTime("error");
+                              result = 'error';
+                              debugTime('error');
                             }
                           }
                         }
@@ -412,12 +428,12 @@ class VkEventsParser {
       }
     }
 
-    if (result === "error") {
+    if (result === 'error') {
       return {
         init: s.trim(),
         result: {
-          error: "Date not parsed"
-        }
+          error: 'Date not parsed',
+        },
       };
     }
 
@@ -438,22 +454,24 @@ class VkEventsParser {
 
     if (result.month === undefined) {
       console.log(s);
-      result.error = "Month not recognized (undefined)";
+      result.error = 'Month not recognized (undefined)';
     }
 
     return {
       init: s.trim(),
-      result
+      result,
     };
   }
+
   stripText(text) {
     text = text.replace(/style="display:none"/, '');
     text = text.replace(/<a href="\/wall-.*Показать полностью…<\/a>/u, '');
     // console.log(">>>", text);
     return text;
   }
+
   parsePost(post) {
-    const author = "none"; // post.querySelector('.post_author .author').innerHTML;
+    const author = 'none'; // post.querySelector('.post_author .author').innerHTML;
 
     const content = post.querySelector('.pi_text');
     if (!content) {
@@ -469,8 +487,8 @@ class VkEventsParser {
 
     const images = [];
     const imageEls = post.querySelectorAll('.thumbs_map div');
-    imageEls.forEach(v => {
-      const m = v.outerHTML.match(new RegExp("background-image: url\\((.+?)\\)"));
+    imageEls.forEach((v) => {
+      const m = v.outerHTML.match(new RegExp('background-image: url\\((.+?)\\)'));
       images.push(m[1]);
     });
 
@@ -479,12 +497,13 @@ class VkEventsParser {
     return {
       eventDt,
       text,
-      images
+      images,
     };
   }
+
   parseWall({ html, page, useOnlyI }) {
     const root = parser.parse(html);
-    let postContainers = root.querySelectorAll(".wall_item");
+    let postContainers = root.querySelectorAll('.wall_item');
 
     if (useOnlyI && postContainers[useOnlyI]) {
       postContainers = [postContainers[useOnlyI]];
@@ -507,53 +526,58 @@ class VkEventsParser {
 
     return posts;
   }
+
   async fetchWall(offset) {
     return await this.fetchText({
       path: this.vkGroupName,
       method: 'POST',
       form: {
         own: 1,
-        offset: offset || 0
-      }
+        offset: offset || 0,
+      },
     });
   }
+
   async fetchFirstWall() {
     return await this.fetchText({
       path: this.vkGroupName,
-      method: 'GET'
+      method: 'GET',
     });
   }
+
   outputDates(posts) {
     posts.forEach(async (post, i) => {
       if (!post.eventDt) {
-        console.log(i + ")" + "no date");
+        console.log(`${i})` + 'no date');
       } else if (post.eventDt.result.error) {
-        console.log(i + ")" + post.eventDt.result.error);
+        console.log(`${i})${post.eventDt.result.error}`);
       } else {
-        console.log(i + ")", post.eventDt.result);
-        console.log(post.eventDt.init + "\n");
+        console.log(`${i})`, post.eventDt.result);
+        console.log(`${post.eventDt.init}\n`);
       }
-    })
+    });
   }
-  async parseGroup ({ store, fromStore }) {
+
+  async parseGroup({ store, fromStore }) {
     let wallHtml;
     if (!fromStore) {
       wallHtml = await this.fetchWall(1);
       if (store) {
-        fs.writeFileSync(appRoot + "/cache/wall.html", wallHtml);
+        fs.writeFileSync(`${appRoot}/cache/wall.html`, wallHtml);
       }
     }
 
     if (fromStore) {
-      wallHtml = fs.readFileSync(appRoot + "/cache/wall.html").toString();
+      wallHtml = fs.readFileSync(`${appRoot}/cache/wall.html`).toString();
     }
-    let r = await this.parseWall(wallHtml);
+    const r = await this.parseWall(wallHtml);
 
     // this.outputDates(r);
 
     return r;
   }
-  async processPage ({ showDates, useOnlyI, i }) {
+
+  async processPage({ showDates, useOnlyI, i }) {
     console.log(`Process ${i} page`);
     const html = await this.fetchWall(10 * i + 1);
     const parseResult = await this.parseWall({ html, page: i, useOnlyI });
@@ -563,7 +587,10 @@ class VkEventsParser {
     }
     return parseResult;
   }
-  async parseGroupLong ({ pages, showDates, useOnlyPage, useOnlyI }) {
+
+  async parseGroupLong({
+    pages, showDates, useOnlyPage, useOnlyI,
+  }) {
     if (!pages) {
       pages = 1;
     }
@@ -573,9 +600,9 @@ class VkEventsParser {
     let parseResult;
 
     if (!useOnlyPage) {
-      console.log(`Process 1 page`);
+      console.log('Process 1 page');
       html = await this.fetchFirstWall();
-      parseResult = await this.parseWall({html, page: 1, useOnlyI});
+      parseResult = await this.parseWall({ html, page: 1, useOnlyI });
       if (showDates) {
         this.outputDates(parseResult);
       }
@@ -583,14 +610,14 @@ class VkEventsParser {
     }
 
     if (useOnlyPage) {
-      let parseResult = await this.processPage({ showDates, i: useOnlyPage });
+      const parseResult = await this.processPage({ showDates, i: useOnlyPage });
       result.concat(parseResult);
       result = [...result, ...parseResult];
     }
 
     if (pages > 1) {
       for (let i = 2; i <= pages; i++) {
-        let parseResult = await this.processPage({ showDates, useOnlyI, i} );
+        const parseResult = await this.processPage({ showDates, useOnlyI, i });
         result.concat(parseResult);
         result = [...result, ...parseResult];
       }
