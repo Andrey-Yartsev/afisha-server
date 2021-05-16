@@ -465,7 +465,7 @@ class VkEventsParser {
 
   stripText(text) {
     text = text.replace(/style="display:none"/, '');
-    text = text.replace(/<a href="\/wall-.*Показать полностью…<\/a>/u, '');
+    text = text.replace(/<a href="\/wall-.*Показать полностью.+<\/a>/u, '');
     // console.log(">>>", text);
     return text;
   }
