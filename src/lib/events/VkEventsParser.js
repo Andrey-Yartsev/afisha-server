@@ -609,10 +609,6 @@ class VkEventsParser {
       result = [...result, ...parseResult];
     }
 
-    console.log(result);
-    console.log("\n%%%%\n");
-    process.exit(1);
-
     if (useOnlyPage) {
       const parseResult = await this.processPage({ showDates, i: useOnlyPage });
       result.concat(parseResult);
