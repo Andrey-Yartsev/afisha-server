@@ -10,9 +10,9 @@ module.exports = async (models) => {
     afishaNnovUpdater.run();
   }, 1000 * 60 * 10);
 
-  const borzostUpdater = new BorzostUpdater(models);
-  await borzostUpdater.run();
-  setInterval(() => {
-    borzostUpdater.run();
-  }, 1000 * 60 * 60 * 3);
+  // const borzostUpdater = new BorzostUpdater(models);
+  // await borzostUpdater.run();
+  // setInterval(() => {
+  //   borzostUpdater.run();
+  // }, 1000 * 60 * 60 * 3);
 };

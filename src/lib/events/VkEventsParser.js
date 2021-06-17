@@ -59,10 +59,8 @@ class VkEventsParser {
   }
 
   parseDayTime(p) {
-    // console.log("***", p);
     let [, day, time] = [...p];
 
-    // console.log(p);
     time = this.parseTime(time);
     day = this.parseDay(day);
 
@@ -198,6 +196,7 @@ class VkEventsParser {
       return t;
     }
     const err = `Time Error '${time}'`;
+    throw new Error(err);
     console.trace(err);
     return err;
   }
@@ -216,6 +215,32 @@ class VkEventsParser {
       day: m[1],
       month: getMonthN(m[2]),
     };
+  }
+
+  parseDaysMonth(text) {
+    text = this.stripWeekDays(text);
+    text = text.replace(/\|/g, '');
+
+    text = text.trim();
+    const mths = months.join('|');
+    const re = `([0-9, ]+)\\s+(${mths})\\s+в\\s+(\\d+:\\d+)`;
+
+    const m = text.match(new RegExp(re, 'i'));
+
+    if (!m) {
+      return false;
+    }
+    let days = m[1];
+    days = days.split(',').map(v => v.trim(v));
+    const firstDay = days[0];
+    const lastDay = days[days.length - 1];
+    const month = getMonthN(m[2].toLowerCase());
+    const time = m[3];
+
+    const dateFrom = moment(`${firstDay}.${month}.YY`, 'DD.MM.YY');
+    const dateTo = moment(`${lastDay}.${month}.YY`, 'DD.MM.YY');
+
+    return this.rangeToDates(dateFrom, dateTo);
   }
 
   parseMonth(text) {
@@ -252,7 +277,7 @@ class VkEventsParser {
       'воскресение',
       'пн',
       'вт',
-      'ср',
+      'Ср',
       'чт',
       'пт',
       'сб',
@@ -260,7 +285,8 @@ class VkEventsParser {
       'суб',
     ];
     weekDays.forEach((weekDay) => {
-      s = s.replace(new RegExp(`\\(${weekDay}\\)`), '');
+      s = s.replace(new RegExp(`\\(${weekDay}\\)`, 'i'), '');
+      s = s.replace(new RegExp(`${weekDay}`, 'i'), '');
     });
     return s;
   }
@@ -299,15 +325,19 @@ class VkEventsParser {
       m = text.match(new RegExp(`${this.datePrefix}([^<]+)`, 'm'));
     }
     if (!m) {
-      // console.log(text);
       return {
         result: {
           error: `${this.datePrefix} not found (looks like ads)`,
         },
       };
     }
+    let date = m[1];
+    let m2 = text.match(new RegExp(`начало:? в([^<]+)<br`, 'i'));
+    if (m2) {
+      date += m2[1];
+    }
 
-    return this.parseDateStr(m[1]);
+    return this.parseDateStr(date);
   }
 
   parseDateStr(s) {
@@ -317,15 +347,12 @@ class VkEventsParser {
     s = s.replace(/\d{4}/, '');
 
     // unusual formats
-    //
     p = s.match(/(\d+)\/(\d+) \(\S+\),?\s*(\d+:\d+);\s*(\d+)\/(\d+) \(\S+\),?\s*(\d+:\d+)/);
     if (p) {
       result = this.parseUnusual1(p);
       result.format = 'DD/MM (weekday), HH:mm; DD/MM (weekday) HH:mm';
     } else {
       p = s.match(/(\d+).(\d+), (\d+:\d+)/);
-      //  parseDayMonthTime(p);
-      // console.log(">>>>", s, p);
       if (p) {
         result = this.parseDayMonthTime(p);
         result.format = 'DD.MM HH:mm';
@@ -338,33 +365,9 @@ class VkEventsParser {
         } else {
           p = s.match(/(.*),(.*)/);
           if (p) {
-            // check if its a dates list
-            const days = s.split(',');
-            const isDaysList = days.every((day) => {
-              const r = this.parseDayMonth(day);
-              return r;
-            });
-
-            if (isDaysList) {
-              result = days.map((day) => this.parseDayMonth(day));
-              result.format = 'day month, day month[, ...]';
-
-              return {
-                init: s.trim(),
-                result,
-              };
-            }
-
-            const hasSecondTime = p[1].match(/(.*),(.*)/);
-            if (hasSecondTime) {
-              if (this.matchTime(hasSecondTime[2])) {
-                p = hasSecondTime;
-              }
-            }
-
-            result = this.parseDayTime(p);
-            result.format = 'day, time';
-          } else {
+            result = this.parseQuotedDate(p, s);
+          } else
+            {
             p = this.parseDayMonth(s);
             if (p) {
               result = p;
@@ -437,30 +440,73 @@ class VkEventsParser {
       };
     }
 
-    // flattern result
-    if (result.day && result.day.day !== undefined) {
-      if (!result.day.day) {
-        result.error = 'day is empty';
+    if (!result.length) {
+      // flattern result
+      if (result.day && result.day.day !== undefined) {
+        if (!result.day.day) {
+          result.error = 'day is empty';
+        }
+        if (result.day.month) {
+          result.month = result.day.month;
+        }
+        result.day = result.day.day;
       }
-      if (result.day.month) {
-        result.month = result.day.month;
+
+      if (result.time && result.time.match(/Error/)) {
+        result.error = result.time;
       }
-      result.day = result.day.day;
-    }
 
-    if (result.time && result.time.match(/Error/)) {
-      result.error = result.time;
-    }
-
-    if (result.month === undefined) {
-      console.log(s);
-      result.error = 'Month not recognized (undefined)';
+      if (result.month === undefined) {
+        result.error = 'Month not recognized (undefined)';
+      }
     }
 
     return {
       init: s.trim(),
       result,
     };
+  }
+
+  parseQuotedDate(p, s) {
+    let result = null;
+
+    result = this.parseDaysMonth(s);
+    if (result) {
+      result.format = 'day1[, dayN] month в time';
+      return result;
+    }
+
+    // check if its a dates list
+    const days = s.split(',');
+
+    console.log(days);
+
+    const isDaysList = days.every((day) => {
+      const r = this.parseDayMonth(day);
+      return r;
+    });
+
+    if (isDaysList) {
+      result = days.map((day) => this.parseDayMonth(day));
+      result.format = 'day month, day month[, ...]';
+
+      return {
+        init: s.trim(),
+        result,
+      };
+    }
+
+    const hasSecondTime = p[1].match(/(.*),(.*)/);
+    if (hasSecondTime) {
+      if (this.matchTime(hasSecondTime[2])) {
+        p = hasSecondTime;
+      }
+    }
+
+    result = this.parseDayTime(p);
+    result.format = 'day, time';
+
+    return result;
   }
 
   stripText(text) {
@@ -470,7 +516,7 @@ class VkEventsParser {
     return text;
   }
 
-  parsePost(post) {
+  parsePost(post, i) {
     const author = 'none'; // post.querySelector('.post_author .author').innerHTML;
 
     const content = post.querySelector('.pi_text');
@@ -480,8 +526,6 @@ class VkEventsParser {
 
     let text = post.querySelector('.pi_text').innerHTML;
     text = text.trim();
-
-    // console.log(text + "\n---------\n");
 
     const eventDt = this.parseDate(text);
 
@@ -505,13 +549,13 @@ class VkEventsParser {
     const root = parser.parse(html);
     let postContainers = root.querySelectorAll('.wall_item');
 
-    if (useOnlyI && postContainers[useOnlyI]) {
+    if (useOnlyI !== undefined && postContainers[useOnlyI]) {
       postContainers = [postContainers[useOnlyI]];
     }
 
     const posts = [];
     postContainers.forEach((container, i) => {
-      const r = this.parsePost(container);
+      const r = this.parsePost(container, i);
       if (!r) {
         return;
       }
@@ -519,7 +563,8 @@ class VkEventsParser {
       r.i = i;
       posts.push(r);
     });
-    // const r = parsePost(postContainers);
+    // console.log(postContainers);
+    // const r = this.parsePost(postContainers[9]);
     //
     // console.log(r);
     // console.log("--------------");
@@ -571,9 +616,7 @@ class VkEventsParser {
       wallHtml = fs.readFileSync(`${appRoot}/cache/wall.html`).toString();
     }
     const r = await this.parseWall(wallHtml);
-
     // this.outputDates(r);
-
     return r;
   }
 
@@ -610,18 +653,21 @@ class VkEventsParser {
     }
 
     if (useOnlyPage) {
-      const parseResult = await this.processPage({ showDates, i: useOnlyPage });
+      const parseResult = await this.processPage({ showDates, i: useOnlyPage, useOnlyI });
       result.concat(parseResult);
       result = [...result, ...parseResult];
-    }
-
-    if (pages > 1) {
-      for (let i = 2; i <= pages; i++) {
-        const parseResult = await this.processPage({ showDates, useOnlyI, i });
-        result.concat(parseResult);
-        result = [...result, ...parseResult];
+    } else {
+      if (pages > 1) {
+        for (let i = 2; i <= pages; i++) {
+          const parseResult = await this.processPage({ showDates, useOnlyI, i });
+          result.concat(parseResult);
+          result = [...result, ...parseResult];
+        }
       }
     }
+
+    // console.log(result[0].eventDt);
+
     return result;
   }
 }

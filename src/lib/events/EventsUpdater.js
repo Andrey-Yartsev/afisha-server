@@ -29,7 +29,6 @@ const getDate = (d) => {
   if (d.time) {
     s += ` ${d.time}`;
   }
-  // console.log(s + "\n=========================");
   return momentFirstMin(moment(s)).toDate();
 };
 
@@ -43,15 +42,16 @@ class EventsUpdater {
 
   async updateRecord(data) {
     if (!data.eventDt.result) {
-      console.log(`No result in ${data.page}:${data.i}`, data);
+      console.log(`${data.page}:${data.i}) No result`, data);
       return;
     }
     if (data.eventDt.result.error) {
-      console.log(`Ignore record ${data.page}:${data.i} - ${data.eventDt.result.error}`);
+      console.log(`${data.page}:${data.i}) Ignore record - ${data.eventDt.result.error}; ` +
+        `used format: ${data.eventDt.result.format}`);
       return;
     }
     if (data.eventDt.result === 'error') {
-      console.log(`Ignore record ${data.page}:${data.i} - error`);
+      console.log(`${data.page}:${data.i}) Ignore record ${data.page}:${data.i}`);
       return;
     }
 
@@ -60,21 +60,18 @@ class EventsUpdater {
 
     if (data.eventDt.result.length) {
       data.eventDt = data.eventDt.result.map((v) => getDate(v));
-      // data.eventDt = [data.eventDt[0]];
     } else {
       data.eventDt = getDate(data.eventDt.result);
       if (!data.eventDt) {
-        console.log('Ignore record no day', data);
+        console.log(`${data.page}:${data.i}) Ignore record no day: `.JSON.stringify(data));
         return;
       }
       data.eventDt = [data.eventDt];
     }
 
-    // await models.Event.remove({});
     const exists = await this.models.Event.findOne({ hash });
-
     if (exists) {
-      console.log('Record exists');
+      console.log(`${data.page}:${data.i}) Record exists`);
       return;
     }
 
@@ -92,14 +89,11 @@ class EventsUpdater {
       { upsert: true },
     );
     if (r.ok) {
-      console.log(`Updating record success. ${!r.upserted ? 'Record exists' : 'New record'}`);
+      console.log(`${data.page}:${data.i}) Updating record success. ${!r.upserted ? 'Record exists' : 'New record'}`);
     }
-    // console.log(r);
   }
 
   async updatePosts(posts) {
-    // console.log(posts[0]);
-    // process.exit();
     return posts.forEach(async (post, i) => {
       if (!post) {
         throw new Error(`No post on index ${i}`);
@@ -114,13 +108,17 @@ class EventsUpdater {
       ...{
         pages: 1,
       // showDates: true,
-      // useOnlyPage: 3
-      // useOnlyI: 3
+      // useOnlyPage: 1,
+      //  useOnlyI: 5
       // store: true,
       // fromStore: true
       },
       ...this.parseGroupOptions,
     });
+    // FOR DEBUG
+    // posts.forEach(post => {
+    //   console.log(`${post.page}.${post.i}) ${post.text}\n---------\n`);
+    // });
     this.updatePosts(posts);
   }
 }
