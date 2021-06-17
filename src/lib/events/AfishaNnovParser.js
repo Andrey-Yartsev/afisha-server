@@ -4,7 +4,7 @@ class AfishaNnovParser extends VkEventsParser {
   constructor() {
     super({
       vkGroupName: 'afisha_nnov',
-      datePrefix: 'Когда:',
+      datePrefix: 'Когда\\s*:',
     });
   }
 }

@@ -47,7 +47,7 @@ class EventsUpdater {
     }
     if (data.eventDt.result.error) {
       console.log(`${data.page}:${data.i}) Ignore record - ${data.eventDt.result.error}; ` +
-        `used format: ${data.eventDt.result.format}`);
+        (data.eventDt.result.format ? `used format: ${data.eventDt.result.format}` : ''));
       return;
     }
     if (data.eventDt.result === 'error') {
@@ -63,7 +63,8 @@ class EventsUpdater {
     } else {
       data.eventDt = getDate(data.eventDt.result);
       if (!data.eventDt) {
-        console.log(`${data.page}:${data.i}) Ignore record no day: `.JSON.stringify(data));
+        console.log(`${data.page}:${data.i}) Ignore record no day` +
+          (data ? JSON.stringify(data) : 'NO DATA'));
         return;
       }
       data.eventDt = [data.eventDt];
@@ -108,8 +109,8 @@ class EventsUpdater {
       ...{
         pages: 1,
       // showDates: true,
-      // useOnlyPage: 1,
-      //  useOnlyI: 5
+      // useOnlyPage: 3,
+      // useOnlyI: 1
       // store: true,
       // fromStore: true
       },
