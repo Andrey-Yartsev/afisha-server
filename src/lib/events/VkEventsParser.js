@@ -196,7 +196,11 @@ class VkEventsParser {
   matchTime(time) {
     time = time.trim();
 
-    let t = time.match(/(\d+)-(\d+)/);
+    let t = time.match(/(\d+) час/);
+    if (t) {
+      return `${t[1]}:00`;
+    }
+    t = time.match(/(\d+)-(\d+)/);
     if (t) {
       return `${t[1]}:${t[2]}`;
     }
@@ -407,8 +411,13 @@ class VkEventsParser {
               p = s.match(/(.*) в (.*)/);
               if (p) {
                 // console.log(p);
-                result = this.parseDayTime(p);
-                result.format = 'day в time';
+                try {
+                  result = this.parseDayTime(p);
+                  result.format = 'day в time';
+                } catch (err) {
+                  console.log("Detect as time pattern 'x в x'. But time not parsed. Init string: " + s);
+                  result = 'error';
+                }
               } else {
                 p = s.match(/(.*) с(.*)до(.*)/);
                 if (p) {
@@ -538,8 +547,13 @@ class VkEventsParser {
       }
     }
 
-    result = this.parseDayTime(p);
-    result.format = 'day, time';
+    try {
+      result = this.parseDayTime(p);
+      result.format = 'day, time';
+    } catch (err) {
+      console.log('Time parse error', p);
+      result = 'error';
+    }
 
     return result;
   }

@@ -3,7 +3,7 @@ const BorzostUpdater = require('../lib/events/BorzostUpdater');
 
 module.exports = async (models) => {
   const afishaNnovUpdater = new AfishaNnovUpdater(models, {
-    pages: 3,
+    pages: 5,
   });
   await afishaNnovUpdater.run();
   setInterval(() => {
