@@ -157,6 +157,29 @@ class VkEventsParser {
     };
   }
 
+  _rangeToDates(dateFrom, dateTo) {
+    // if format if 'D по D month'
+    const intFrom = parseInt(dateFrom);
+    const resultTo = this.parseDayMonth(dateTo);
+    if (intFrom && resultTo) {
+      const _dateFrom = moment(`${intFrom}.${resultTo.month}`, "DD.MM");
+      const _dateTo = moment(`${resultTo.day}.${resultTo.month}`, "DD.MM");
+      return this.rangeToDates(_dateFrom, _dateTo);
+    }
+
+    const _dateFrom = moment(dateFrom, "DD.MM.YY");
+    const _dateTo = moment(dateTo, "DD.MM.YY");
+
+    if (_dateFrom.toString() === "Invalid date") {
+      throw new Error(`dateFrom <${dateFrom}> can't be parsed. Moment returns 'Invalid date'`);
+    }
+    if (_dateTo.toString() === "Invalid date") {
+      throw new Error(`dateTo <${dateTo}> can't be parsed. Moment returns 'Invalid date'`);
+    }
+    console.log("_rangeToDates: " + dateFrom + " - " + dateTo + " > " + _dateFrom.toString() + " - " + _dateTo.toString());
+    return this.rangeToDates(_dateFrom, _dateTo);
+  }
+
   rangeToDates(dateFrom, dateTo) {
     const days = [];
     let nextDay = dateFrom.clone();
@@ -173,14 +196,9 @@ class VkEventsParser {
   // [, dd.mm.yy, dd.mm.yy]
   parseDatePeriod(p) {
     let [, dateFrom, dateTo] = [...p];
-
     dateFrom = dateFrom.trim();
     dateTo = dateTo.trim();
-
-    dateFrom = moment(dateFrom, 'DD.MM.YY');
-    dateTo = moment(dateTo, 'DD.MM.YY');
-
-    return this.rangeToDates(dateFrom, dateTo);
+    return this._rangeToDates(dateFrom, dateTo);
   }
 
   parseDatePeriodMonth(p) {
@@ -231,7 +249,6 @@ class VkEventsParser {
     text = text.trim();
     const mths = months.join('|');
     const re = `^(\\d+)\\s*(${mths})$`;
-    // console.log(text);
     const m = text.match(new RegExp(re, 'i'));
     if (!m) {
       return false;
@@ -372,7 +389,6 @@ class VkEventsParser {
     if (m2) {
       date += m2[1];
     }
-
     return this.parseDateStr(date);
   }
 
@@ -410,7 +426,6 @@ class VkEventsParser {
             } else {
               p = s.match(/(.*) в (.*)/);
               if (p) {
-                // console.log(p);
                 try {
                   result = this.parseDayTime(p);
                   result.format = 'day в time';
@@ -441,8 +456,15 @@ class VkEventsParser {
                       } else {
                         p = s.match(/с(.*)по(.*)/);
                         if (p) {
-                          result = this.parseDatePeriod(p);
-                          result.format = 'с DD.MM.YY по DD.MM.YY';
+                          //try {
+                            result = this.parseDatePeriod(p);
+                            result.format = 'с DD.MM.YY по DD.MM.YY';
+
+                          // } catch (err) {
+                          //   result = {
+                          //     error: err.toString()
+                          //   }
+                          // }
                         } else {
                           p = s.match(/(\d+)-(\d+)\s+(\S+)/);
                           if (p) {
@@ -475,6 +497,10 @@ class VkEventsParser {
           }
         }
       }
+    }
+
+    if (typeof result === "object" && result.error) {
+      return { result };
     }
 
     if (result === 'error') {

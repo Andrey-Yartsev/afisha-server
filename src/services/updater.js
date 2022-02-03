@@ -1,14 +1,25 @@
 const AfishaNnovUpdater = require('../lib/events/AfishaNnovUpdater');
-const BorzostUpdater = require('../lib/events/BorzostUpdater');
-
+// const BorzostUpdater = require('../lib/events/BorzostUpdater');
+const moment = require('moment');
 module.exports = async (models) => {
+  //console.log(moment("30 января", "DD.MM.YY").toString());
+  // console.log(moment("25 января", "DD.MM.YY").toString());
+  // return;
   const afishaNnovUpdater = new AfishaNnovUpdater(models, {
-    pages: 5,
+    pages: 4,
+    // useOnlyPage: 5,
+    // useOnlyI: 5
   });
-  await afishaNnovUpdater.run();
-  setInterval(() => {
-    afishaNnovUpdater.run();
-  }, 1000 * 60 * 10);
+  try {
+    await afishaNnovUpdater.run();
+  } catch (err) {
+    console.log(err.toString());
+    process.exit(0);
+  }
+  return null;
+  // setInterval(() => {
+  //   afishaNnovUpdater.run();
+  // }, 1000 * 60 * 10);
 
   // const borzostUpdater = new BorzostUpdater(models);
   // await borzostUpdater.run();
