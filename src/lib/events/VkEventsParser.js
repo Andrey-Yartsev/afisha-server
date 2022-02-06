@@ -65,6 +65,9 @@ class VkEventsParser {
 
     return new Promise((accept) => {
       request(config, (err, response, body) => {
+        if (body === undefined) {
+          throw new Error("No internet connection");
+        }
         // const c = iconv.encode(iconv.decode(body, 'cp1251'), 'utf8').toString();
         accept(body.toString());
       });
@@ -176,7 +179,7 @@ class VkEventsParser {
     if (_dateTo.toString() === "Invalid date") {
       throw new Error(`dateTo <${dateTo}> can't be parsed. Moment returns 'Invalid date'`);
     }
-    console.log("_rangeToDates: " + dateFrom + " - " + dateTo + " > " + _dateFrom.toString() + " - " + _dateTo.toString());
+    // console.log("_rangeToDates: " + dateFrom + " - " + dateTo + " > " + _dateFrom.toString() + " - " + _dateTo.toString());
     return this.rangeToDates(_dateFrom, _dateTo);
   }
 
