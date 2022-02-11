@@ -6,7 +6,7 @@ module.exports = async (models) => {
   // console.log(moment("25 января", "DD.MM.YY").toString());
   // return;
   const afishaNnovUpdater = new AfishaNnovUpdater(models, {
-    pages: 4,
+    pages: 1,
     // useOnlyPage: 5,
     // useOnlyI: 5
   });

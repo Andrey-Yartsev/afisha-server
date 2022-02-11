@@ -35,8 +35,19 @@ module.exports = async function () {
   server.route(require('./routes/events'));
   server.route(require('./routes/admin/events'));
 
+  await server.register(require('@hapi/inert'));
+  server.route({
+    method: 'GET',
+    path: '/api/upload/{param*}',
+    handler: {
+      directory: {
+        path: 'upload'
+      }
+    }
+  });
+
   await server.start();
   console.log(`Server is listening on ${host}:${port}`);
 
-  require('./services/updater')(models);
+  // require('./services/updater')(models);
 };

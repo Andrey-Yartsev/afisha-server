@@ -1,11 +1,8 @@
 const mongoose = require('mongoose');
 
-const objectId = mongoose.Schema.Types.ObjectId;
-
-module.exports = mongoose.Schema({
+const schema = mongoose.Schema({
   hash: {
-    type: String,
-    required: true,
+    type: String
   },
   dtUpdate: {
     type: Date,
@@ -28,4 +25,14 @@ module.exports = mongoose.Schema({
     type: Array,
     default: [],
   },
+  userImages: [{ type: mongoose.Schema.Types.ObjectId, ref: 'EventUserImage' }],
 });
+
+// schema.virtual('ddd').get(function() {
+//   return "sss";
+//   return this.userImages.forEach(v => {
+//     return "upload/" + v._id + ".png";
+//   });
+// });
+
+module.exports = schema;

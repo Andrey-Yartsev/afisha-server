@@ -10,8 +10,9 @@
   "license": "ISC",
   "dependencies": {
     "@hapi/code": "^8.0.1",
-    "@hapi/hapi": "^18.4.0",
+    "@hapi/hapi": "^19.0.0",
     "@hapi/hoek": "^9.0.3",
+    "@hapi/inert": "^6.0.5",
     "@hapi/lab": "^22.0.3",
     "@hapi/vision": "^5.5.4",
     "chai": "^4.2.0",
@@ -22,7 +23,7 @@
     "iconv-lite": "^0.4.24",
     "joi": "^14.3.1",
     "moment": "^2.24.0",
-    "mongoose": "^5.7.1",
+    "mongoose": "^6.2.1",
     "node-fetch": "^2.6.0",
     "node-html-parser": "^1.1.15",
     "request": "^2.88.0"

@@ -12,6 +12,21 @@ module.exports = [
     }
   },
   {
+    method: 'POST',
+    path: '/api/events/images/{id}',
+    config: {
+      description: 'Creates event image',
+      tags: ['admin'],
+      auth: 'admin',
+      handler: controller.upload,
+      payload: {
+        maxBytes: 209715200,
+        output: 'file',
+        parse: true
+      }
+    }
+  },
+  {
     method: 'DELETE',
     path: '/api/admin/events/{id}',
     handler: controller.remove,
