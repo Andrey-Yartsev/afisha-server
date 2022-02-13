@@ -33,6 +33,7 @@ module.exports = async function () {
   await require('./lib/auth')(server);
 
   server.route(require('./routes/events'));
+  server.route(require('./routes/admin/auth'));
   server.route(require('./routes/admin/events'));
 
   await server.register(require('@hapi/inert'));
@@ -49,5 +50,5 @@ module.exports = async function () {
   await server.start();
   console.log(`Server is listening on ${host}:${port}`);
 
-  require('./services/updater')(models);
+  //require('./services/updater')(models);
 };
