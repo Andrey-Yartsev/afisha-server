@@ -49,5 +49,5 @@ module.exports = async function () {
   await server.start();
   console.log(`Server is listening on ${host}:${port}`);
 
-  // require('./services/updater')(models);
+  require('./services/updater')(models);
 };
