@@ -2,13 +2,11 @@ const AfishaNnovUpdater = require('../lib/events/AfishaNnovUpdater');
 // const BorzostUpdater = require('../lib/events/BorzostUpdater');
 const moment = require('moment');
 module.exports = async (models) => {
-  //console.log(moment("30 января", "DD.MM.YY").toString());
-  // console.log(moment("25 января", "DD.MM.YY").toString());
-  // return;
   const afishaNnovUpdater = new AfishaNnovUpdater(models, {
     pages: 4,
-    // useOnlyPage: 5,
-    // useOnlyI: 5
+    // useOnlyPage: 2,
+    // useOnlyI: 4,
+    // outputTextOnError: true
   });
   try {
     await afishaNnovUpdater.run();

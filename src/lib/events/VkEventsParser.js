@@ -66,7 +66,7 @@ class VkEventsParser {
     return new Promise((accept) => {
       request(config, (err, response, body) => {
         if (body === undefined) {
-          throw new Error("No internet connection");
+          throw new Error('No internet connection');
         }
         // const c = iconv.encode(iconv.decode(body, 'cp1251'), 'utf8').toString();
         accept(body.toString());
@@ -165,18 +165,18 @@ class VkEventsParser {
     const intFrom = parseInt(dateFrom);
     const resultTo = this.parseDayMonth(dateTo);
     if (intFrom && resultTo) {
-      const _dateFrom = moment(`${intFrom}.${resultTo.month}`, "DD.MM");
-      const _dateTo = moment(`${resultTo.day}.${resultTo.month}`, "DD.MM");
+      const _dateFrom = moment(`${intFrom}.${resultTo.month}`, 'DD.MM');
+      const _dateTo = moment(`${resultTo.day}.${resultTo.month}`, 'DD.MM');
       return this.rangeToDates(_dateFrom, _dateTo);
     }
 
-    const _dateFrom = moment(dateFrom, "DD.MM.YY");
-    const _dateTo = moment(dateTo, "DD.MM.YY");
+    const _dateFrom = moment(dateFrom, 'DD.MM.YY');
+    const _dateTo = moment(dateTo, 'DD.MM.YY');
 
-    if (_dateFrom.toString() === "Invalid date") {
+    if (_dateFrom.toString() === 'Invalid date') {
       throw new Error(`dateFrom <${dateFrom}> can't be parsed. Moment returns 'Invalid date'`);
     }
-    if (_dateTo.toString() === "Invalid date") {
+    if (_dateTo.toString() === 'Invalid date') {
       throw new Error(`dateTo <${dateTo}> can't be parsed. Moment returns 'Invalid date'`);
     }
     // console.log("_rangeToDates: " + dateFrom + " - " + dateTo + " > " + _dateFrom.toString() + " - " + _dateTo.toString());
@@ -251,7 +251,7 @@ class VkEventsParser {
     text = this.stripWeekDays(text);
     text = text.trim();
     const mths = months.join('|');
-    const re = `^(\\d+)\\s*(${mths})$`;
+    const re = `^(\\d+)\\s*(${mths})`;
     const m = text.match(new RegExp(re, 'i'));
     if (!m) {
       return false;
@@ -433,7 +433,7 @@ class VkEventsParser {
                   result = this.parseDayTime(p);
                   result.format = 'day в time';
                 } catch (err) {
-                  console.log("Detect as time pattern 'x в x'. But time not parsed. Init string: " + s);
+                  console.log('Detect as time pattern \'x в x\'. But time not parsed. Init string: ' + s);
                   result = 'error';
                 }
               } else {
@@ -459,15 +459,14 @@ class VkEventsParser {
                       } else {
                         p = s.match(/с(.*)по(.*)/);
                         if (p) {
-                          //try {
+                          try {
                             result = this.parseDatePeriod(p);
-                            result.format = 'с DD.MM.YY по DD.MM.YY';
-
-                          // } catch (err) {
-                          //   result = {
-                          //     error: err.toString()
-                          //   }
-                          // }
+                          } catch (err) {
+                            result = {
+                              error: err.toString()
+                            };
+                            result.format = 'с day по day month';
+                          }
                         } else {
                           p = s.match(/(\d+)-(\d+)\s+(\S+)/);
                           if (p) {
@@ -502,7 +501,7 @@ class VkEventsParser {
       }
     }
 
-    if (typeof result === "object" && result.error) {
+    if (typeof result === 'object' && result.error) {
       return { result };
     }
 

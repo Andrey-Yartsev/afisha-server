@@ -48,6 +48,9 @@ class EventsUpdater {
     if (data.eventDt.result.error) {
       console.log(`${data.page}:${data.i}) Ignore record - ${data.eventDt.result.error}; ` +
         (data.eventDt.result.format ? `used format: ${data.eventDt.result.format}` : ''));
+      if (this.parseGroupOptions.outputTextOnError) {
+        console.log("\n" + data.text);
+      }
       return;
     }
     if (data.eventDt.result === 'error') {
