@@ -1,4 +1,4 @@
-require('dotenv').config()
+require('dotenv').config();
 const path = require('path');
 
 global.appRoot = path.resolve(__dirname);

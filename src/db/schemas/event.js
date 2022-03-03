@@ -26,13 +26,15 @@ const schema = mongoose.Schema({
     default: [],
   },
   userImages: [{ type: mongoose.Schema.Types.ObjectId, ref: 'EventUserImage' }],
+}, {
+  toObject: { virtuals: true },
+  toJSON: { virtuals: true },
 });
 
-// schema.virtual('ddd').get(function() {
-//   return "sss";
-//   return this.userImages.forEach(v => {
-//     return "upload/" + v._id + ".png";
-//   });
-// });
+schema.virtual('userImagePaths').get(function() {
+  return this.userImages.map(v => {
+    return "http://localhost:8002/upload/" + v._id + ".png";
+  });
+});
 
 module.exports = schema;

@@ -1,53 +1,52 @@
-const moment = require('moment');
-const handleFileUpload = require('../../lib/handleFileUpload');
+const auth = require('../../middleware/auth/admin');
 const fs = require('fs');
+const express = require('express');
 
-module.exports = {
-  create: async (request, h) => {
-    let events = await request.db.Event.find({
-      '$expr': {
-        '$and': [
-          { '$eq': ['$name', 'development'] },
-          { '$gte': [{ '$size': '$followers' }, 100] }
-        ]
-      }
-    })
-      .sort({ dtUpdate: -1 });
-    events = events.map((v) => {
-      console.log(v.eventDt, v.eventDt.toString()); // write test
-      v.eventDt = moment(v.eventDt.toString())
-        .format('DD.MM');
-      v._dtUpdate = moment(v.dtUpdate)
-        .format('DD.MM H:mm');
-      // v._dtUpdate = v.dtUpdate;
-      return v;
-    });
-    return h.view('admin/events', { events });
-  },
-  remove: async (request, h) => {
-    await request.db.Event.remove({ _id: request.params.id });
-  },
-  upload: async (request, h) => {
-    const event = await request.db.Event.findOne({ _id: request.params.id });
-    const data = request.payload;
-    let path;
-    if (data.file) {
-      path = data.file.path;
-    } else if (data.path) {
-      path = data.path;
+module.exports = (app) => {
+  app.post('/api/events/images/:id', auth, async function (req, res) {
+    if (!req.files) {
+      res.send({
+        status: false,
+        message: 'No file uploaded'
+      });
     } else {
-      throw new Error('Upload error. data: ' + JSON.stringify(data));
+      let file = req.files.file;
+      if (!req.files.file) {
+        res.send({
+          status: false,
+          message: 'No file uploaded 2'
+        });
+      }
+      // logic
+      const event = await app.db.Event.findOne({_id: req.params.id});
+      const image = await app.db.EventUserImage.create({
+        event: req.params.id
+      });
+      event.userImages.push(image._id);
+      await event.save();
+
+      const name = image._id + '.png';
+      await file.mv('./upload/' + name);
+      res.send({name});
     }
-    const record = await request.db.EventUserImage.create({
-      event: request.params.id
+  });
+  app.delete('/api/events/images/:id', auth, async function (req, res) {
+    const image = await app.db.EventUserImage.findOne({
+      _id: req.params.id
     });
-    event.userImages.push(record._id);
-    await event.save();
-    const name = record._id + '.png';
-    const newPath = global.appRoot + '/upload/' + name;
-    fs.renameSync(path, newPath);
-    return {
-      name
-    };
-  }
+    if (image) {
+      const event = await app.db.Event.findOne({
+        _id: image.event
+      });
+      event.userImages = event.userImages.filter(v => {
+        return v._id.toString() !== image._id.toString();
+      });
+      await event.save();
+      await image.remove();
+      fs.rmSync(global.appRoot + '/upload/' + image._id + '.png');
+      res.send({success: true});
+    } else {
+      res.send({error: 'Record does not exists'});
+    }
+  });
 };

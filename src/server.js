@@ -1,54 +1,40 @@
-const Hapi = require('@hapi/hapi');
-
+const express = require('express');
+const cors = require('cors');
+const bodyParser = require('body-parser');
+const morgan = require('morgan');
+const fileUpload = require('express-fileupload');
 const db = require('./db');
 
-const host = process.env.HOST || '0.0.0.0';
-const port = process.env.PORT || 8001;
-
 module.exports = async function () {
-  const server = Hapi.Server({
-    debug: { request: ['error'] },
-    port,
-    routes: {
-      cors: true,
-    },
-    host,
-  });
-
-  await server.register(require('@hapi/vision'));
-
-  server.views({
-    engines: {
-      html: require('handlebars'),
-    },
-    relativeTo: __dirname,
-    path: 'templates',
-  });
-
   const models = await db();
 
-  server.decorate('request', 'db', models);
-  server.decorate('server', 'db', models);
+  const app = express();
 
-  await require('./lib/auth')(server);
+  app.use(fileUpload({
+    createParentPath: true
+  }));
+  app.use(cors());
+  app.use(bodyParser.json({
+    limit: '10mb'
+  }));
+  app.use(bodyParser.urlencoded({
+    extended: true,
+  }));
+  app.use(morgan('dev'));
 
-  server.route(require('./routes/events'));
-  server.route(require('./routes/admin/auth'));
-  server.route(require('./routes/admin/events'));
+  app.db = models;
 
-  await server.register(require('@hapi/inert'));
-  server.route({
-    method: 'GET',
-    path: '/api/upload/{param*}',
-    handler: {
-      directory: {
-        path: 'upload'
-      }
-    }
+  const port = 8001;
+
+  app.get('/', (req, res) => {
+    res.send('Hello World!')
   });
 
-  await server.start();
-  console.log(`Server is listening on ${host}:${port}`);
+  require('./controllers/index')(app);
 
-  require('./services/updater')(models);
+  app.listen(port, () => {
+    console.log(`afisha-server is listening on port ${port}`)
+  })
+
+  // require('./services/updater')(models);
 };

@@ -1,45 +1,21 @@
 const moment = require('moment');
 
-module.exports = {
-  fetch: async (request) => {
-    const eventDt = request.params.date;
-    let criteria = {};
-    if (eventDt) {
-      const today = moment(eventDt, 'DD.MM');
-      const from = today.startOf('day')
-        .toDate();
-      const to = today.endOf('day')
-        .toDate();
-
-      criteria = {
-        eventDt: {
-          $elemMatch: {
-            $gte: from,
-            $lt: to,
-          },
-        },
-      };
-      // console.log(criteria);
-    }
-    const r = await request.db.Event.find(criteria);
-    return r;
-  },
-  fetchLastUpdated: async (request) => {
-    let events = await request.db.Event.find()
+module.exports = (app) => {
+  app.get('/api/event/:id', async function (req, res) {
+    let event = await app.db.Event.findOne({
+      _id: req.params.id
+    });
+    res.send(event);
+  });
+  app.get('/api/events/last-updated', async function (req, res) {
+    const events = await app.db.Event.find()
       .sort({ dtUpdate: -1 })
       .populate(['userImages'])
       .limit(5);
-    events = events.map(event => {
-      event = event.toObject();
-      event.userImagePaths = event.userImages.map(image => {
-        return "/upload/" + image._id + ".png";
-      });
-      return event;
-    });
-    return events;
-  },
-  exists: async (request) => {
-    const { month } = request.params;
+    res.send(events);
+  });
+  app.get('/api/events/exists/:month', async function (req, res) {
+    const { month } = req.params;
     const dt = moment(month, 'M');
     const from = dt.clone()
       .subtract(2, 'month')
@@ -57,9 +33,8 @@ module.exports = {
         },
       },
     };
-    const result = await request.db.Event.find(criteria, { eventDt: true });
+    const result = await app.db.Event.find(criteria, { eventDt: true });
     const days = [];
-
     result.forEach((r) => {
       r.eventDt.forEach((date) => {
         const mDate = moment(date)
@@ -70,7 +45,27 @@ module.exports = {
         }
       });
     });
-
-    return days;
-  },
+    res.send(days);
+  })
+  app.get('/api/events/:date?', async function (req, res) {
+    const eventDt = req.params.date;
+    let criteria = {};
+    if (eventDt) {
+      const today = moment(eventDt, 'DD.MM');
+      const from = today.startOf('day')
+        .toDate();
+      const to = today.endOf('day')
+        .toDate();
+      criteria = {
+        eventDt: {
+          $elemMatch: {
+            $gte: from,
+            $lt: to,
+          },
+        },
+      };
+    }
+    const events = await app.db.Event.find(criteria);
+    res.send(events);
+  });
 };
