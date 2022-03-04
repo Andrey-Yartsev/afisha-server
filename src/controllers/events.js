@@ -10,7 +10,6 @@ module.exports = (app) => {
   app.get('/api/events/last-updated', async function (req, res) {
     const events = await app.db.Event.find()
       .sort({ dtUpdate: -1 })
-      .populate(['userImages'])
       .limit(5);
     res.send(events);
   });

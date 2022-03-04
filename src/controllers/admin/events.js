@@ -1,6 +1,9 @@
 const auth = require('../../middleware/auth/admin');
 const fs = require('fs');
-const express = require('express');
+
+// function timeout(ms) {
+//   return new Promise(resolve => setTimeout(resolve, ms));
+// }
 
 module.exports = (app) => {
   app.post('/api/events/images/:id', auth, async function (req, res) {
