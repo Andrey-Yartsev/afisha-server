@@ -1,6 +1,6 @@
 const AfishaNnovUpdater = require('../lib/events/AfishaNnovUpdater');
-// const BorzostUpdater = require('../lib/events/BorzostUpdater');
-const moment = require('moment');
+const DvizhEventsUpdater = require("./src/lib/events/DvizhEventsUpdater");
+
 module.exports = async (models) => {
   const afishaNnovUpdater = new AfishaNnovUpdater(models, {
     pages: 4,
@@ -18,9 +18,9 @@ module.exports = async (models) => {
     afishaNnovUpdater.run();
   }, 1000 * 60 * 10);
 
-  // const borzostUpdater = new BorzostUpdater(models);
-  // await borzostUpdater.run();
-  // setInterval(() => {
-  //   borzostUpdater.run();
-  // }, 1000 * 60 * 60 * 3);
+  setInterval(() => {
+    const updater = new DvizhEventsUpdater(models);
+    updater.run();
+  }, 1000 * 60 * 60);
+
 };

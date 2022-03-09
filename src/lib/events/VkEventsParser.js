@@ -1,5 +1,4 @@
 const request = require('request');
-const iconv = require('iconv-lite');
 const parser = require('node-html-parser');
 const fs = require('fs');
 const moment = require('moment');
@@ -8,49 +7,35 @@ const path = require('path');
 
 const appRoot = path.dirname(path.dirname(path.resolve(__dirname)));
 
+
+const {
+  getMonthN,
+  rangeToDates,
+  parseDayMonth,
+  parseDaysMonth,
+  parseMonth
+} = require('./parseMonth');
+
 const debugTime = (text) => {
   // console.log(text);
 };
 
 // https://m.vk.com/afisha_nnov?offset=15&own=1
 
-const months = [
-  'января',
-  'февраля',
-  'марта',
-  'апреля',
-  'мая',
-  'июня',
-  'июля',
-  'августа',
-  'сентября',
-  'октября',
-  'ноября',
-  'декабря',
-];
-
-const getMonthN = (month) => {
-  month = month.toLowerCase();
-  if (months.indexOf(month) === -1) {
-    throw new Error('Wrong month input: ' + month);
-  }
-  return months.indexOf(month) + 1;
-};
-
 class VkEventsParser {
   constructor({
-    vkGroupName,
-    datePrefix
-  }) {
+                vkGroupName,
+                datePrefix
+              }) {
     this.vkGroupName = vkGroupName;
     this.datePrefix = datePrefix;
   }
 
   fetchText({
-    path,
-    method,
-    form
-  }) {
+              path,
+              method,
+              form
+            }) {
     const config = {
       url: `https://m.vk.com/${path}`,
       encoding: null,
@@ -163,11 +148,11 @@ class VkEventsParser {
   _rangeToDates(dateFrom, dateTo) {
     // if format if 'D по D month'
     const intFrom = parseInt(dateFrom);
-    const resultTo = this.parseDayMonth(dateTo);
+    const resultTo = parseDayMonth(dateTo);
     if (intFrom && resultTo) {
       const _dateFrom = moment(`${intFrom}.${resultTo.month}`, 'DD.MM');
       const _dateTo = moment(`${resultTo.day}.${resultTo.month}`, 'DD.MM');
-      return this.rangeToDates(_dateFrom, _dateTo);
+      return rangeToDates(_dateFrom, _dateTo);
     }
 
     const _dateFrom = moment(dateFrom, 'DD.MM.YY');
@@ -180,20 +165,7 @@ class VkEventsParser {
       throw new Error(`dateTo <${dateTo}> can't be parsed. Moment returns 'Invalid date'`);
     }
     // console.log("_rangeToDates: " + dateFrom + " - " + dateTo + " > " + _dateFrom.toString() + " - " + _dateTo.toString());
-    return this.rangeToDates(_dateFrom, _dateTo);
-  }
-
-  rangeToDates(dateFrom, dateTo) {
-    const days = [];
-    let nextDay = dateFrom.clone();
-    while (true) {
-      nextDay = nextDay.add(1, 'day');
-      if (nextDay > dateTo || nextDay === dateTo) {
-        break;
-      }
-      days.push(nextDay.clone());
-    }
-    return [dateFrom, ...days];
+    return rangeToDates(_dateFrom, _dateTo);
   }
 
   // [, dd.mm.yy, dd.mm.yy]
@@ -211,7 +183,7 @@ class VkEventsParser {
     const dateFrom = moment(`${days[0]}.${month}`, 'DD.MM');
     const dateTo = moment(`${days[1]}.${month}`, 'DD.MM');
 
-    return this.rangeToDates(dateFrom, dateTo);
+    return rangeToDates(dateFrom, dateTo);
   }
 
   matchTime(time) {
@@ -247,102 +219,10 @@ class VkEventsParser {
     return err;
   }
 
-  parseDayMonth(text) {
-    text = this.stripWeekDays(text);
-    text = text.trim();
-    const mths = months.join('|');
-    const re = `^(\\d+)\\s*(${mths})`;
-    const m = text.match(new RegExp(re, 'i'));
-    if (!m) {
-      return false;
-    }
-    return {
-      day: m[1],
-      month: getMonthN(m[2]),
-    };
-  }
-
-  parseDaysMonth(text) {
-    text = this.stripWeekDays(text);
-    text = text.replace(/\|/g, '');
-
-    text = text.trim();
-    const mths = months.join('|');
-    const re = `([0-9, ]+)\\s+(${mths})\\s+в\\s+(\\d+:\\d+)`;
-
-    const m = text.match(new RegExp(re, 'i'));
-
-    if (!m) {
-      return false;
-    }
-    let days = m[1];
-    days = days.split(',')
-      .map(v => v.trim(v));
-    const firstDay = days[0];
-    const lastDay = days[days.length - 1];
-    const month = getMonthN(m[2].toLowerCase());
-    const time = m[3];
-
-    const dateFrom = moment(`${firstDay}.${month}.YY`, 'DD.MM.YY');
-    const dateTo = moment(`${lastDay}.${month}.YY`, 'DD.MM.YY');
-
-    return this.rangeToDates(dateFrom, dateTo);
-  }
-
-  parseMonth(text) {
-    text = this.stripWeekDays(text);
-    const mths = months.join('|');
-
-    const m = text.match(new RegExp(`(${mths})`, 'i'));
-    if (!m) {
-      return false;
-    }
-
-    let month = m[0];
-    let day = text.replace(month, '')
-      .trim();
-    const d = day.match(/(\d+)/);
-    if (!d) {
-      throw new Error('day not found');
-    }
-    day = d[1];
-    month = getMonthN(month);
-    return {
-      day,
-      month,
-    };
-  }
-
-  stripWeekDays(s) {
-    const weekDays = [
-      'понедельник',
-      'вторник',
-      'среда',
-      'четверг',
-      'пятница',
-      'суббота',
-      'воскресенье',
-      'воскресение',
-      'пн',
-      'вт',
-      'Ср',
-      'чт',
-      'пт',
-      'сб',
-      'вс',
-      'суб',
-    ];
-    weekDays.forEach((weekDay) => {
-      s = s.replace(new RegExp(`\\(${weekDay}\\)`, 'i'), '');
-      s = s.replace(new RegExp(`${weekDay}`, 'i'), '');
-    });
-    return s;
-  }
-
   parseDay(day) {
     day = day.trim();
     let month = null;
-    const r = this.parseMonth(day);
+    const r = parseMonth(day);
 
     if (r) {
       day = r.day;
@@ -422,7 +302,7 @@ class VkEventsParser {
           if (p) {
             result = this.parseQuotedDate(p, s);
           } else {
-            p = this.parseDayMonth(s);
+            p = parseDayMonth(s);
             if (p) {
               result = p;
               result.format = 'day month';
@@ -502,7 +382,7 @@ class VkEventsParser {
     }
 
     if (typeof result === 'object' && result.error) {
-      return { result };
+      return {result};
     }
 
     if (result === 'error') {
@@ -544,7 +424,7 @@ class VkEventsParser {
   parseQuotedDate(p, s) {
     let result = null;
 
-    result = this.parseDaysMonth(s);
+    result = parseDaysMonth(s);
     if (result) {
       result.format = 'day1[, dayN] month в time';
       return result;
@@ -554,12 +434,12 @@ class VkEventsParser {
     const days = s.split(',');
 
     const isDaysList = days.every((day) => {
-      const r = this.parseDayMonth(day);
+      const r = parseDayMonth(day);
       return r;
     });
 
     if (isDaysList) {
-      result = days.map((day) => this.parseDayMonth(day));
+      result = days.map((day) => parseDayMonth(day));
       result.format = 'day month, day month[, ...]';
 
       return {
@@ -623,10 +503,10 @@ class VkEventsParser {
   }
 
   parseWall({
-    html,
-    page,
-    useOnlyI
-  }) {
+              html,
+              page,
+              useOnlyI
+            }) {
     const root = parser.parse(html);
     let postContainers = root.querySelectorAll('.wall_item');
 
@@ -685,9 +565,9 @@ class VkEventsParser {
   }
 
   async parseGroup({
-    store,
-    fromStore
-  }) {
+                     store,
+                     fromStore
+                   }) {
     let wallHtml;
     if (!fromStore) {
       wallHtml = await this.fetchWall(1);
@@ -706,10 +586,10 @@ class VkEventsParser {
   }
 
   async processPage({
-    showDates,
-    useOnlyI,
-    i
-  }) {
+                      showDates,
+                      useOnlyI,
+                      i
+                    }) {
     console.log(`Process ${i} page`);
     const html = await this.fetchWall(10 * i + 1);
     const parseResult = await this.parseWall({
@@ -725,11 +605,11 @@ class VkEventsParser {
   }
 
   async parseGroupLong({
-    pages,
-    showDates,
-    useOnlyPage,
-    useOnlyI,
-  }) {
+                         pages,
+                         showDates,
+                         useOnlyPage,
+                         useOnlyI,
+                       }) {
     if (!pages) {
       pages = 1;
     }
