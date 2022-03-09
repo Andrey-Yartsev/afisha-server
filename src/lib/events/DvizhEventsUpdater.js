@@ -30,6 +30,7 @@ class DvizhEventsUpdater {
     console.log(`${data.page}:${data.i}) Updating record success. ${!r.upserted ? 'Record exists' : 'New record'}`);
   }
   async run() {
+    console.log('============');
     const records = await this.parser.getData();
     for (let record of records) {
       await this.updateRecord(record, 666);

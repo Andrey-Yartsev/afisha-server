@@ -59,6 +59,7 @@ class VkDvizhParser {
     throw new Error('Error date parse');
   }
   async getData() {
+    console.log('Getting data from TagoMago');
     let data = await this.fetchTextDvizh();
     data = JSON.parse(data);
     let events = data.data;

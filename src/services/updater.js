@@ -1,5 +1,5 @@
 const AfishaNnovUpdater = require('../lib/events/AfishaNnovUpdater');
-const DvizhEventsUpdater = require("./src/lib/events/DvizhEventsUpdater");
+const DvizhEventsUpdater = require("../lib/events/DvizhEventsUpdater");
 
 module.exports = async (models) => {
   const afishaNnovUpdater = new AfishaNnovUpdater(models, {
@@ -8,19 +8,15 @@ module.exports = async (models) => {
     // useOnlyI: 4,
     // outputTextOnError: true
   });
-  try {
-    await afishaNnovUpdater.run();
-  } catch (err) {
-    console.log(err.toString());
-    process.exit(0);
-  }
+  afishaNnovUpdater.run();
   setInterval(() => {
-    afishaNnovUpdater.run();
+     afishaNnovUpdater.run();
   }, 1000 * 60 * 10);
 
+  const dvizhUpdater = new DvizhEventsUpdater(models);
+  dvizhUpdater.run();
   setInterval(() => {
-    const updater = new DvizhEventsUpdater(models);
-    updater.run();
+    dvizhUpdater.run();
   }, 1000 * 60 * 60);
 
 };
