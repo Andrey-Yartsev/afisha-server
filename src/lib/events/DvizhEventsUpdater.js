@@ -7,7 +7,7 @@ class DvizhEventsUpdater {
     this.parser = new parser();
   }
   async updateRecord(data, i) {
-    const unic = data.text;
+    const unic = data.text + JSON.stringify(data.eventDt);
     const hash = hashCode(unic);
     const exists = await this.models.Event.findOne({ hash });
     if (exists) {
