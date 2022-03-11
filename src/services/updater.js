@@ -18,5 +18,4 @@ module.exports = async (models) => {
   setInterval(() => {
     dvizhUpdater.run();
   }, 1000 * 60 * 60);
-
 };

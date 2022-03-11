@@ -1,36 +1,5 @@
-const moment = require('moment');
-const AfishaNnovParser = require('./AfishaNnovParser');
 const hashCode = require('./hashCode');
-
-function isNumeric(n) {
-  return !isNaN(parseFloat(n)) && isFinite(n);
-}
-
-const momentFirstMin = (moment) => moment.add(1, 'second') // .utc();
-;
-
-const getDate = (d) => {
-  if (moment.isMoment(d)) {
-    d = momentFirstMin(d);
-
-    return d.toDate();
-  }
-
-  if (!d.day) {
-    return false;
-  }
-  if (!isNumeric(d.day)) {
-    return false;
-  }
-  let s = '';
-
-  s += `${moment().format('YYYY')}-${
-    (`0${d.month}`).slice(-2)}-${(`0${d.day}`).slice(-2)}`;
-  if (d.time) {
-    s += ` ${d.time}`;
-  }
-  return momentFirstMin(moment(s)).toDate();
-};
+const { getDate } = require('./dateUpdateFormat');
 
 class EventsUpdater {
   constructor(name, models, parser, parseGroupOptions) {
@@ -88,6 +57,7 @@ class EventsUpdater {
           eventDt: data.eventDt,
           dtUpdate: Date.now(),
           images: data.images,
+          source: 'afisha-nnov'
         },
       },
       { upsert: true },

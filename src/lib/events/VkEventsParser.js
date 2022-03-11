@@ -524,12 +524,6 @@ class VkEventsParser {
       r.i = i;
       posts.push(r);
     });
-    // console.log(postContainers);
-    // const r = this.parsePost(postContainers[9]);
-    //
-    // console.log(r);
-    // console.log("--------------");
-
     return posts;
   }
 

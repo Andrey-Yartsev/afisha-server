@@ -23,14 +23,15 @@ class DvizhEventsUpdater {
           eventDt: data.eventDt,
           dtUpdate: Date.now(),
           images: data.images,
+          source: 'tago'
         },
       },
       { upsert: true },
     );
-    console.log(`${data.page}:${data.i}) Updating record success. ${!r.upserted ? 'Record exists' : 'New record'}`);
+    console.log(`${i}) Updating dvizh-record success`);
   }
   async run() {
-    console.log('============');
+    console.log('Running parser TagoMago');
     const records = await this.parser.getData();
     for (let record of records) {
       await this.updateRecord(record, 666);

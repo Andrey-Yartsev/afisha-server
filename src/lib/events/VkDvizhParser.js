@@ -2,7 +2,7 @@ const request = require('request');
 const parser = require('node-html-parser');
 const fs = require('fs');
 const { parseDayMonth } = require('./parseMonth');
-
+const { getDate } = require('./dateUpdateFormat');
 
 class VkDvizhParser {
   constructor() {
@@ -26,6 +26,7 @@ class VkDvizhParser {
     return await this.fetchText('https://dvizh.app/api/frame/schedule/actual?vk_access_token_settings=&vk_app_id=6819359&vk_are_notifications_enabled=0&vk_group_id=203940015&vk_is_app_user=0&vk_is_favorite=0&vk_language=ru&vk_platform=desktop_web&vk_ref=group&vk_ts=1646820706&vk_user_id=2288363&vk_viewer_group_role=member&sign=VvUAuDkBn8zPjoLHuLA-8INaOuJUcSWWKhJr-MJ5qlo');
   }
   async parseGroupPageDate(link) {
+    console.log(`Parsing ${link}`);
     const html = await this.fetchText(link);
     const root = parser.parse(html);
     let cont = root.querySelectorAll('.profile_info');
@@ -34,8 +35,6 @@ class VkDvizhParser {
 
     infoRows.forEach(row => {
       if (row.innerHTML.match(/Начало:/)) {
-        // console.log(row.innerHTML);
-        // console.log("\n\n");
         let value = row.querySelectorAll('dd');
         date = this.parseDateTime(value[0].innerText);
       }
@@ -45,11 +44,22 @@ class VkDvizhParser {
   parseDateTime(s) {
     const p = s.match(/(.*) в (.*)/);
     if (p) {
-      const result = parseDayMonth(p[1]);
-      if (!result) {
-        throw new Error('Date parse error');
+      let result = {};
+      if (p[1] === 'сегодня') {
+        const date = new Date();
+        result = {
+          day: date.getDay(),
+          month: date.getMonth(),
+        };
+        result.format = 'сегодня в hh:mm';
+        // console.log(result);
+      } else {
+        result = parseDayMonth(p[1]);
+        if (!result) {
+          throw new Error('Date parse error, String: ' + p[1]);
+        }
+        result.format = 'day month в hh:mm'
       }
-      result.format = 'day month в hh:mm'
       result.time = p[2];
       return {
         init: s,
@@ -72,7 +82,12 @@ class VkDvizhParser {
       i++;
       let record = {};
       try {
-        record.eventDt = await this.parseGroupPageDate(event.buttons[0].link);
+        let _eventDt = await this.parseGroupPageDate(event.buttons[0].link);
+        const eventDt = getDate(_eventDt.result);
+        if (!eventDt) {
+          console.log('Getting date error for ', _eventDt);
+        }
+        record.eventDt = eventDt;
       } catch (err) {
         console.log(err.message + ' on Index ' + i + ', title: ' + event.title);
         continue;
@@ -80,6 +95,7 @@ class VkDvizhParser {
       if (!record.eventDt) {
         continue;
       }
+
       if (event.image) {
         record.images = [event.image];
       }

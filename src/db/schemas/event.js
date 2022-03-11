@@ -25,6 +25,10 @@ const schema = mongoose.Schema({
     type: Array,
     default: [],
   },
+  source: {
+    type: String,
+    default: "",
+  },
   userImages: [{ type: mongoose.Schema.Types.ObjectId, ref: 'EventUserImage' }],
 }, {
   toObject: { virtuals: true },
