@@ -459,8 +459,7 @@ class VkEventsParser {
       result = this.parseDayTime(p);
       result.format = 'day, time';
     } catch (err) {
-      console.log('Time parse error', p);
-      result = 'error';
+      result = { error: err.message };
     }
 
     return result;
