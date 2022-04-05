@@ -37,7 +37,7 @@ const schema = mongoose.Schema({
 
 schema.virtual('userImagePaths').get(function() {
   return this.userImages.map(v => {
-    return process.env.STATIC_PATH + "/upload/" + v._id + ".png";
+    return process.env.STATIC_PATH + "/upload/event/report/" + v._id + ".png";
   });
 });
 
