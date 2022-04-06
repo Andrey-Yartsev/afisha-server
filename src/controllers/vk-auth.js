@@ -61,7 +61,7 @@ module.exports = (app) => {
     }
   );
   app.get('/api/me', auth,
-    async function (req, res) {git
+    async function (req, res) {
       const user = await app.db.User.findOne({ _id: req.user._id });
       if (!user) {
         res.status(500);
