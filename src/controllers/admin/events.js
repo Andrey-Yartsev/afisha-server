@@ -1,4 +1,4 @@
-const auth = require('../../middleware/auth/admin');
+const adminAuth = require('../../middleware/auth/admin');
 const fs = require('fs');
 
 // function timeout(ms) {
@@ -17,7 +17,7 @@ const makeid = function (length) {
 }
 
 module.exports = (app) => {
-  app.post('/api/events/images/:id', auth, async function (req, res) {
+  app.post('/api/events/images/:id', adminAuth, async function (req, res) {
       if (!req.files) {
         res.send({
           status: false,
@@ -44,7 +44,7 @@ module.exports = (app) => {
       await file.mv('./upload/event/report/' + name);
       res.send({name});
     });
-  app.delete('/api/events/images/:id', auth, async function (req, res) {
+  app.delete('/api/events/images/:id', adminAuth, async function (req, res) {
     const image = await app.db.EventUserImage.findOne({
       _id: req.params.id
     });
@@ -63,14 +63,14 @@ module.exports = (app) => {
       res.send({error: 'Record does not exists'});
     }
   });
-  app.post('/api/admin/events/images/temp', auth, async function (req, res) {
+  app.post('/api/admin/events/images/temp', adminAuth, async function (req, res) {
     let file = req.files.file;
     const name = makeid(20) + '.png';
     await file.mv('./upload/event/temp/' + name);
     res.send({name});
   });
-  app.post('/api/admin/events', auth, async function (req, res) {
-    const r = await this.models.Event.create({
+  app.post('/api/admin/events', adminAuth, async function (req, res) {
+    const r = await app.db.Event.create({
       text: text,
       eventDt: [eventDt],
       dtUpdate: Date.now(),
@@ -78,7 +78,7 @@ module.exports = (app) => {
       source: 'admin'
     });
   });
-  app.post('/api/admin/events/:id', auth, async function (req, res) {
+  app.post('/api/admin/events/:id', adminAuth, async function (req, res) {
     const update = {
       text: req.body.text
     };
