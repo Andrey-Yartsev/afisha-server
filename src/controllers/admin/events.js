@@ -1,5 +1,6 @@
 const adminAuth = require('../../middleware/auth/admin');
 const fs = require('fs');
+const moment = require('moment');
 
 // function timeout(ms) {
 //   return new Promise(resolve => setTimeout(resolve, ms));
@@ -15,6 +16,10 @@ const makeid = function (length) {
   }
   return result;
 }
+
+const getDate = function ({ date, time }) {
+  return moment(`${date} ${time}`, 'DD.MM HH:mm').toDate();
+};
 
 module.exports = (app) => {
   app.post('/api/events/images/:id', adminAuth, async function (req, res) {
@@ -70,19 +75,36 @@ module.exports = (app) => {
     res.send({name});
   });
   app.post('/api/admin/events', adminAuth, async function (req, res) {
-    const r = await app.db.Event.create({
-      text: text,
+    const eventDt = getDate(req.body);
+    let images = [];
+    if (req.body.image) {
+      images.push(req.body.image);
+    }
+    const result = await app.db.Event.create({
+      text: req.body.text,
+      images,
       eventDt: [eventDt],
       dtUpdate: Date.now(),
-      images: data.images,
       source: 'admin'
     });
+    res.send(result);
   });
   app.post('/api/admin/events/:id', adminAuth, async function (req, res) {
+    const eventDt = getDate(req.body);
+    let images = [];
+    if (req.body.image) {
+      images.push(req.body.image);
+    }
     const update = {
+      eventDt: [eventDt],
+      images,
       text: req.body.text
     };
     await app.db.Event.updateOne({ _id: req.params.id }, update);
     res.send(await app.db.Event.findById(req.params.id));
+  });
+  app.delete('/api/admin/events/:id', adminAuth, async function (req, res) {
+    await app.db.Event.deleteOne({ _id: req.params.id });
+    res.send({ success: true });
   });
 };
