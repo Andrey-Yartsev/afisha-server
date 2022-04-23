@@ -255,10 +255,10 @@ class VkEventsParser {
   }
 
   parseDate(text) {
-    text = text.replace(new RegExp(`${this.datePrefix}\s*<br\s*\/?>`), this.datePrefix);
-    let m = text.match(new RegExp(`${this.datePrefix}([^<]+)<br`, 'm'));
+    text = text.replace(new RegExp(`${this.datePrefix}\s*<br\s*\/?>`, 'i'), this.datePrefix);
+    let m = text.match(new RegExp(`${this.datePrefix}([^<]+)<br`, 'mi'));
     if (!m) {
-      m = text.match(new RegExp(`${this.datePrefix}([^<]+)`, 'm'));
+      m = text.match(new RegExp(`${this.datePrefix}([^<]+)`, 'mi'));
     }
     if (!m) {
       return {

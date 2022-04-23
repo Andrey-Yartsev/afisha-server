@@ -7,7 +7,7 @@ module.exports = async (models) => {
     pages: 4,
     useOnlyPage: 3,
     // useOnlyI: 4,
-    // outputTextOnError: true
+    outputTextOnError: true
   });
   afishaNnovUpdater.run();
   // setInterval(() => {
