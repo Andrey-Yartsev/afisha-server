@@ -220,6 +220,14 @@ class VkEventsParser {
   }
 
   parseDay(day) {
+    const result = day.match(/(\d+).(\d+)/);
+    if (result) {
+      return {
+        day: parseInt(result[1]),
+        month: parseInt(result[2])
+      };
+    }
+
     day = day.trim();
     let month = null;
     const r = parseMonth(day);
@@ -456,6 +464,7 @@ class VkEventsParser {
     }
 
     try {
+
       result = this.parseDayTime(p);
       result.format = 'day, time';
     } catch (err) {

@@ -6,7 +6,7 @@ module.exports = async (models) => {
   const afishaNnovUpdater = new AfishaNnovUpdater(models, {
     pages: 4,
     useOnlyPage: 3,
-    // useOnlyI: 4,
+    useOnlyI: 0,
     outputTextOnError: true
   });
   afishaNnovUpdater.run();
