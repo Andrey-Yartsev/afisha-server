@@ -1,4 +1,4 @@
-const VkEventsParser = require('./VkEventsParser');
+const VkEventsParser = require('../VkEventsParser');
 
 class AfishaNnovParser extends VkEventsParser {
   constructor() {

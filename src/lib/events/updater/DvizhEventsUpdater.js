@@ -1,5 +1,5 @@
-const parser = require('./VkDvizhParser');
-const hashCode = require('./hashCode');
+const parser = require('../parser/export/VkDvizhParser');
+const hashCode = require('../utils/hashCode');
 
 class DvizhEventsUpdater {
   constructor(models) {

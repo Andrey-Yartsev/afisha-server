@@ -19,4 +19,10 @@ new AfishaNnovUpdater(models, {
 });
 ```
 
-TODO: сделать проверку useOnlyPage, если она не попадает в скоуп {pages}
+## TODO
+
+npm run updater afisha
+npm run parser afisha
+
+
+

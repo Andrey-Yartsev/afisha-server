@@ -1,5 +1,5 @@
-const hashCode = require('./hashCode');
-const { getDate } = require('./dateUpdateFormat');
+const hashCode = require('../utils/hashCode');
+const { getDate } = require('../utils/dateUpdateFormat');
 
 class EventsUpdater {
   constructor(name, models, parser, parseGroupOptions) {

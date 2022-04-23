@@ -1,8 +1,8 @@
 const request = require('request');
 const parser = require('node-html-parser');
 const fs = require('fs');
-const { parseDayMonth } = require('./parseMonth');
-const { getDate } = require('./dateUpdateFormat');
+const { parseDayMonth } = require('../../utils/parseMonth');
+const { getDate } = require('../../utils/dateUpdateFormat');
 
 class VkDvizhParser {
   constructor() {

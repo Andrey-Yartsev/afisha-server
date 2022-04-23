@@ -14,7 +14,7 @@ const {
   parseDayMonth,
   parseDaysMonth,
   parseMonth
-} = require('./parseMonth');
+} = require('../utils/parseMonth');
 
 const debugTime = (text) => {
   // console.log(text);
@@ -489,7 +489,9 @@ class VkEventsParser {
     const imageEls = post.querySelectorAll('.thumbs_map div');
     imageEls.forEach((v) => {
       const m = v.outerHTML.match(new RegExp('background-image: url\\((.+?)\\)'));
-      images.push(m[1]);
+      if (m) {
+        images.push(m[1]);
+      }
     });
 
     text = this.stripText(text);

@@ -1,5 +1,5 @@
 const EventsUpdater = require('./EventsUpdater');
-const AfishaNnovParser = require('./AfishaNnovParser');
+const AfishaNnovParser = require('../parser/export/AfishaNnovParser');
 
 class AfishaNnovUpdater extends EventsUpdater {
   constructor(models, parseGroupOptions) {
