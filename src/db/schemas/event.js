@@ -30,6 +30,10 @@ const schema = mongoose.Schema({
     default: "",
   },
   userImages: [{ type: mongoose.Schema.Types.ObjectId, ref: 'EventUserImage' }],
+  noPlace: {
+    type: Boolean,
+    default: false
+  }
 }, {
   toObject: { virtuals: true },
   toJSON: { virtuals: true },
