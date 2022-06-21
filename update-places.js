@@ -14,4 +14,5 @@ process.on('unhandledRejection', (reason, p) => {
   }
   const parser = new Parser(models, options);
   await parser.parse();
+  process.exit(0);
 })();

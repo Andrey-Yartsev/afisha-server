@@ -67,4 +67,12 @@ module.exports = (app) => {
     const events = await app.db.Event.find(criteria);
     res.send(events);
   });
+  app.get('/api/events/search/:word?', async function (req, res) {
+    const word = req.params.word;
+    const criteria = { $text: { $search: word } };
+    const events = await app.db.Event.find(criteria)
+      .sort({ dtUpdate: -1 })
+      .limit(100);
+    res.send(events);
+  });
 };
