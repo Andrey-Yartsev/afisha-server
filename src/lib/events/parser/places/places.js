@@ -1,7 +1,10 @@
 module.exports = [
   {name: 'REBEL'},
   {name: 'Парк им. 1 Мая'},
-  {name: 'ЛУЧ368'},
+  {
+    name: 'ЛУЧ368',
+    hide: true
+  },
   {name: 'ЛУЧ 368'},
   {name: 'Nebar'},
   {name: 'ИЦАЭ Нижнего Новгорода'},
@@ -10,14 +13,31 @@ module.exports = [
   {name: 'Пивзавод'},
   {name: 'FRIENDS'},
   {name: 'Cartel'},
-  {name: 'Oh My Craft'},
-  {name: 'Oh,My Craft'},
-  {name: 'Oh, My Craft'},
-  {name: 'Oh. My Craft'},
+  {
+    name: 'Oh My Craft',
+    hide: true
+  },
+  {
+    name: 'Oh,My Craft',
+    hide: true
+  },
+  {
+    name: 'Oh, My Craft'
+  },
+  {
+    name: 'Oh. My Craft',
+    hide: true
+  },
   {name: 'Butch & dutch'},
-  {name: 'Butch&Dutch'},
+  {
+    name: 'Butch&Dutch',
+    hide: true
+  },
   {name: 'teatr_utug'},
-  {name: 'склад'},
+  {
+    name: 'склад',
+    hide: true
+  },
   {name: 'SKLADclub'},
   {name: 'ezGaming'},
   {name: 'Юпитер'},
@@ -28,8 +48,13 @@ module.exports = [
   {name: 'Башня Мага'},
   {name: 'DO YOU Lounge'},
   {name: 'Зебра'},
-  {name: 'Alcatraz'},
-  {name: 'Alcatarz'},
+  {
+    name: 'Alcatraz',
+  },
+  {
+    name: 'Alcatarz',
+    hide: true
+  },
   {name: 'СИЯЙ'},
   {name: 'Центр театрального мастерства'},
   {name: 'Синий Соловей'},

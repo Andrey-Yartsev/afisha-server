@@ -36,5 +36,5 @@ module.exports = async function () {
     console.log(`afisha-server is listening on port ${port}`)
   })
 
-  require('./services/updater')(models);
+  //require('./services/updater')(models);
 };

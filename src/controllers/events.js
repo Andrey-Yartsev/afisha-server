@@ -71,7 +71,7 @@ module.exports = (app) => {
     const word = req.params.word;
     const criteria = { $text: { $search: word } };
     const events = await app.db.Event.find(criteria)
-      .sort({ dtUpdate: -1 })
+      .sort({ eventDt: -1 })
       .limit(100);
     res.send(events);
   });
