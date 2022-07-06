@@ -1,4 +1,5 @@
 const adminAuth = require('../../middleware/auth/admin');
+const auth = require('../../middleware/auth/user');
 const fs = require('fs');
 const moment = require('moment');
 
@@ -74,18 +75,27 @@ module.exports = (app) => {
     await file.mv('./upload/event/temp/' + name);
     res.send({name});
   });
-  app.post('/api/admin/events', adminAuth, async function (req, res) {
+  app.post('/api/admin/events', auth, async function (req, res) {
     const eventDt = getDate(req.body);
     let images = [];
     if (req.body.image) {
       images.push(req.body.image);
+    }
+    console.log(req.user);
+    let vkUser = null;
+    if (req.user) {
+      vkUser = {};
+      vkUser.vkId = req.user;
+      vkUser.username = req.username;
+      vkUser.displayName = req.displayName;
     }
     const result = await app.db.Event.create({
       text: req.body.text,
       images,
       eventDt: [eventDt],
       dtUpdate: Date.now(),
-      source: 'admin'
+      source: 'admin',
+      vkUser: vkUser
     });
     res.send(result);
   });

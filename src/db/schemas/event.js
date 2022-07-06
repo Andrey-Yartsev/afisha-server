@@ -33,6 +33,10 @@ const schema = mongoose.Schema({
   noPlace: {
     type: Boolean,
     default: false
+  },
+  vkUser: {
+    type: Object,
+    default: null
   }
 }, {
   toObject: { virtuals: true },
