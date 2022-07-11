@@ -11,7 +11,10 @@ class VkDvizhParser {
     const config = {
       url,
       encoding: null,
-      method: 'GET'
+      method: 'GET',
+      headers: {
+        authorization: 'Bearer vk_access_token_settings=&vk_app_id=6819359&vk_are_notifications_enabled=0&vk_group_id=203940015&vk_is_app_user=0&vk_is_favorite=0&vk_language=ru&vk_platform=desktop_web&vk_ref=group&vk_ts=1657547811&vk_user_id=2288363&vk_viewer_group_role=member&sign=z0wfTqMpbcDWdRtvFCuKeFtmOod74dnkGIQ_wK2r6ZQ'
+      }
     };
     return new Promise((accept) => {
       request(config, (err, response, body) => {
@@ -23,7 +26,7 @@ class VkDvizhParser {
     });
   }
   async fetchTextDvizh() {
-    return await this.fetchText('https://dvizh.app/api/frame/schedule/actual?vk_access_token_settings=&vk_app_id=6819359&vk_are_notifications_enabled=0&vk_group_id=203940015&vk_is_app_user=0&vk_is_favorite=0&vk_language=ru&vk_platform=desktop_web&vk_ref=group&vk_ts=1646820706&vk_user_id=2288363&vk_viewer_group_role=member&sign=VvUAuDkBn8zPjoLHuLA-8INaOuJUcSWWKhJr-MJ5qlo');
+    return await this.fetchText('https://ya1.dvizh.app/api/frame/schedule/actual');
   }
   async parseGroupPageDate(link) {
     console.log(`Parsing ${link}`);
@@ -71,10 +74,9 @@ class VkDvizhParser {
   async getData() {
     console.log('Getting data from TagoMago');
     let data = await this.fetchTextDvizh();
+
     data = JSON.parse(data);
     let events = data.data;
-
-    // events = [events[4]]; // for debug errors
 
     const records = [];
     let i = -1;

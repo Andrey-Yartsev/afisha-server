@@ -75,6 +75,7 @@ module.exports = (app) => {
     await file.mv('./upload/event/temp/' + name);
     res.send({name});
   });
+  // добавление события вк-юзеро или админом
   app.post('/api/admin/events', auth, async function (req, res) {
     const eventDt = getDate(req.body);
     let images = [];

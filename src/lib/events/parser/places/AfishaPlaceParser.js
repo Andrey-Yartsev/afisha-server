@@ -1,5 +1,5 @@
 const places = require('./places');
-const limit = 360;
+const limit = 10;
 
 class AfishaPlaceParser {
   constructor(models, options) {
