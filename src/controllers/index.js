@@ -4,4 +4,5 @@ module.exports = (app) => {
   require('./admin/events')(app);
   require('./vk-auth')(app);
   require('./places')(app);
+  require('./admin/places')(app);
 };

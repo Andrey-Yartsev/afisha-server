@@ -1,9 +1,14 @@
 const moment = require('moment');
+const fs = require('fs');
 
 module.exports = (app) => {
   app.get('/api/places', function (req, res) {
     let places = require(global.appRoot + '/src/lib/events/parser/places/places.js');
-    //let places2 = [];
+
+    places = places.map((place, index) => {
+      place.id = index + 1;
+      return place;
+    });
 
     const filterDuplicates = () => {
       let existingDuplicateIndex;
@@ -33,6 +38,17 @@ module.exports = (app) => {
     //filterDuplicates();
     filterHidden();
 //    console.log(places);
+
+
+    places = places.map(place => {
+      const path = './upload/place/image/' + place.id + '.png';
+      if (fs.existsSync(path)) {
+        place.imagePath = process.env.STATIC_PATH + '/upload/place/image/' + place.id + '.png';
+      }
+      return place;
+    });
+
+
     res.send(places);
   });
 };
