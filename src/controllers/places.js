@@ -41,7 +41,7 @@ module.exports = (app) => {
     let i = 0;
     for (const place of places) {
       const image = await app.db.PlaceImage.findOne({placeId: place.id});
-      if (image) {
+      if (image && image.dtUpdate) {
         console.log("FOUND");
         places[i].imagePath = process.env.STATIC_PATH + '/upload/place/image/' +
           place.id + '.png?' + image.dtUpdate.toISOString();
