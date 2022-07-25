@@ -2,7 +2,7 @@ const moment = require('moment');
 const fs = require('fs');
 
 module.exports = (app) => {
-  app.get('/api/places', function (req, res) {
+  app.get('/api/places', async function (req, res) {
     let places = require(global.appRoot + '/src/lib/events/parser/places/places.js');
 
     places = places.map((place, index) => {
@@ -37,18 +37,20 @@ module.exports = (app) => {
     //filterHidden();
     //filterDuplicates();
     filterHidden();
-//    console.log(places);
 
-
-    places = places.map(place => {
-      const path = './upload/place/image/' + place.id + '.png';
-      if (fs.existsSync(path)) {
-        place.imagePath = process.env.STATIC_PATH + '/upload/place/image/' + place.id + '.png';
+    let i = 0;
+    for (const place of places) {
+      const image = await app.db.PlaceImage.findOne({placeId: place.id});
+      if (image) {
+        console.log("FOUND");
+        places[i].imagePath = process.env.STATIC_PATH + '/upload/place/image/' +
+          place.id + '.png?' + image.dtUpdate.toISOString();
+      } else {
+        places[i].imagePath = null;
       }
-      return place;
-    });
 
-
+      i++;
+    }
     res.send(places);
   });
 };

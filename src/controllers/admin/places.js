@@ -1,4 +1,5 @@
 const adminAuth = require('../../middleware/auth/admin');
+const fs = require('fs');
 
 module.exports = (app) => {
   app.post('/api/places/images/:placeId', adminAuth, async function (req, res) {
@@ -39,4 +40,27 @@ module.exports = (app) => {
       path: process.env.STATIC_PATH + '/upload/place/image/' + name
     });
   });
+
+
+  app.delete('/api/places/images/:placeId', adminAuth, async function (req, res) {
+    console.log(req.params.placeId);
+    const image = await app.db.PlaceImage.findOne({
+      placeId: req.params.placeId
+    });
+    if (image) {
+      const r = image.remove();
+      console.log(r);
+      console.log(await app.db.PlaceImage.findOne({
+        placeId: req.params.placeId
+      }));
+      //global.appRootas
+      console.log('DELETE ./upload/place/image/' + image.placeId + '.png');
+      fs.rmSync('./upload/place/image/' + image.placeId + '.png');
+      res.send({success: true});
+    } else {
+      res.status(404);
+      res.send({error: 'Record does not exists'});
+    }
+  });
+
 };
