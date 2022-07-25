@@ -13,7 +13,7 @@ class VkDvizhParser {
       encoding: null,
       method: 'GET',
       headers: {
-        authorization: 'Bearer vk_access_token_settings=&vk_app_id=6819359&vk_are_notifications_enabled=0&vk_group_id=203940015&vk_is_app_user=0&vk_is_favorite=0&vk_language=ru&vk_platform=desktop_web&vk_ref=group&vk_ts=1657547811&vk_user_id=2288363&vk_viewer_group_role=member&sign=z0wfTqMpbcDWdRtvFCuKeFtmOod74dnkGIQ_wK2r6ZQ'
+        authorization: 'Bearer vk_access_token_settings=&vk_app_id=6819359&vk_are_notifications_enabled=0&vk_group_id=203940015&vk_is_app_user=0&vk_is_favorite=0&vk_language=ru&vk_platform=desktop_web&vk_ref=other&vk_ts=1658734343&vk_user_id=2288363&vk_viewer_group_role=member&sign=Xk2t62OYY6RUlwE7BX3CSFz9XJ8JdNa9gjPBwtqhJUQ'
       }
     };
     return new Promise((accept) => {
@@ -74,7 +74,6 @@ class VkDvizhParser {
   async getData() {
     console.log('Getting data from TagoMago');
     let data = await this.fetchTextDvizh();
-
     data = JSON.parse(data);
     let events = data.data;
 
