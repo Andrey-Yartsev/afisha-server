@@ -1,4 +1,4 @@
-const places = require('./places');
+const places = require('./_places');
 const limit = 10;
 
 class AfishaPlaceParser {
